@@ -110,22 +110,18 @@ export default function Sidebar({ collapsed, setCollapsed, className }: SidebarP
     >
       {/* Sidebar Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100">
-        <div className="flex items-center gap-2.5 overflow-hidden">
-          <img src="/logo.png" alt="MediRecord Logo" className="h-8 w-8 object-contain shrink-0" />
-          {!collapsed && (
-            <motion.span
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              className="font-extrabold text-slate-800 tracking-tight text-base"
-            >
-              MediRecord
-            </motion.span>
-          )}
+        <div className="flex items-center gap-2.5 overflow-hidden flex-1">
+          <img 
+            src="/logo.png" 
+            alt="MediRecord Logo" 
+            className={`object-contain transition-all duration-300 ${
+              collapsed ? 'h-8 w-8' : 'h-10 w-auto max-w-[130px]'
+            }`} 
+          />
         </div>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-lg hidden md:block"
+          className="p-1.5 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-lg hidden md:block shrink-0"
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
