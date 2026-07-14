@@ -270,55 +270,108 @@ export default function DeathRegistryPage() {
             <p className="text-xs text-slate-400">Modify your filters or draft a new record to start.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">Certificate #</th>
-                  <th className="py-3 px-4">Deceased Name</th>
-                  <th className="py-3 px-4">Age / Gender</th>
-                  <th className="py-3 px-4">Date of Death</th>
-                  <th className="py-3 px-4">Cause / ICD-10</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-center">Action</th>
+          <>
+            {/* Desktop View */}
+            <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50 text-slate-400 font-bold uppercase tracking-wider">
+                <th className="py-3 px-4">Certificate #</th>
+                <th className="py-3 px-4">Deceased Name</th>
+                <th className="py-3 px-4">Age / Gender</th>
+                <th className="py-3 px-4">Date of Death</th>
+                <th className="py-3 px-4">Cause / ICD-10</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((r) => (
+                <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all duration-100">
+                  <td className="py-3.5 px-4 font-bold text-slate-800">{r.certificateNumber}</td>
+                  <td className="py-3.5 px-4 font-bold text-slate-800">{r.deceasedName}</td>
+                  <td className="py-3.5 px-4 font-medium text-slate-600">{r.deceasedAge} yrs / {r.deceasedGender}</td>
+                  <td className="py-3.5 px-4 text-slate-500 font-medium">{r.dateOfDeath}</td>
+                  <td className="py-3.5 px-4">
+                    {r.causeOfDeath ? (
+                      <div>
+                        <span className="font-semibold text-slate-700 block">{r.causeOfDeath}</span>
+                        <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded inline-block mt-0.5">ICD-10: {r.icd10Code}</span>
+                      </div>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Certified Yet</span>
+                    )}
+                  </td>
+                  <td className="py-3.5 px-4">{getStatusBadge(r.status)}</td>
+                  <td className="py-3.5 px-4 text-center">
+                    <button
+                      onClick={() => {
+                        setSelectedRecord(r);
+                        setCauseInput('');
+                        setIcd10Input('');
+                      }}
+                      className="btn-secondary py-1 px-2.5 text-xs inline-flex items-center gap-1 hover:border-teal-500 hover:text-teal-700"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>Inspect</span>
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {records.map((r) => (
-                  <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all duration-100">
-                    <td className="py-3.5 px-4 font-bold text-slate-800">{r.certificateNumber}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-800">{r.deceasedName}</td>
-                    <td className="py-3.5 px-4 font-medium text-slate-600">{r.deceasedAge} yrs / {r.deceasedGender}</td>
-                    <td className="py-3.5 px-4 text-slate-500 font-medium">{r.dateOfDeath}</td>
-                    <td className="py-3.5 px-4">
-                      {r.causeOfDeath ? (
-                        <div>
-                          <span className="font-semibold text-slate-700 block">{r.causeOfDeath}</span>
-                          <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded inline-block mt-0.5">ICD-10: {r.icd10Code}</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 italic">Not Certified Yet</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4">{getStatusBadge(r.status)}</td>
-                    <td className="py-3.5 px-4 text-center">
-                      <button
-                        onClick={() => {
-                          setSelectedRecord(r);
-                          setCauseInput('');
-                          setIcd10Input('');
-                        }}
-                        className="btn-secondary py-1 px-2.5 text-xs inline-flex items-center gap-1 hover:border-teal-500 hover:text-teal-700"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        <span>Inspect</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile View */}
+        <div className="block sm:hidden divide-y divide-slate-100">
+          {records.map((r) => (
+            <div key={r.id} className="p-4 space-y-3 text-xs bg-white">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="font-mono font-bold text-slate-800 text-[10px] block">Cert #: {r.certificateNumber}</span>
+                  <span className="font-bold text-slate-800 text-sm block mt-0.5">{r.deceasedName}</span>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">{r.deceasedAge} yrs / {r.deceasedGender}</span>
+                </div>
+                {getStatusBadge(r.status)}
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-lg space-y-1.5 text-[10px] text-slate-500 font-medium">
+                <div className="flex justify-between">
+                  <span>Date of Death:</span>
+                  <strong className="text-slate-700">{r.dateOfDeath}</strong>
+                </div>
+                <div className="flex justify-between items-start gap-2">
+                  <span>Cause of Death:</span>
+                  <div className="text-right">
+                    {r.causeOfDeath ? (
+                      <>
+                        <strong className="text-slate-700 block">{r.causeOfDeath}</strong>
+                        <span className="text-[8px] font-bold text-slate-400 bg-slate-200 px-1 py-0.2 rounded inline-block mt-0.5">ICD-10: {r.icd10Code}</span>
+                      </>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Certified Yet</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-1 flex">
+                <button
+                  onClick={() => {
+                    setSelectedRecord(r);
+                    setCauseInput('');
+                    setIcd10Input('');
+                  }}
+                  className="btn-secondary py-2 px-3 text-[10px] inline-flex items-center gap-1.5 flex-1 justify-center hover:border-teal-500 hover:text-teal-700 shadow-xs"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  <span>Inspect Record</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+          </>
         )}
       </div>
 

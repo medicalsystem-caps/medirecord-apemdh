@@ -217,57 +217,111 @@ export default function BirthRegistryPage() {
             <p className="text-xs text-slate-400">Modify your search query or add a new record to start.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">Certificate #</th>
-                  <th className="py-3 px-4">Child Name</th>
-                  <th className="py-3 px-4">Gender</th>
-                  <th className="py-3 px-4">Birth Date</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Duplicate Check</th>
-                  <th className="py-3 px-4 text-center">Action</th>
+          <>
+            {/* Desktop View */}
+            <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50 text-slate-400 font-bold uppercase tracking-wider">
+                <th className="py-3 px-4">Certificate #</th>
+                <th className="py-3 px-4">Child Name</th>
+                <th className="py-3 px-4">Gender</th>
+                <th className="py-3 px-4">Birth Date</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Duplicate Check</th>
+                <th className="py-3 px-4 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((r) => (
+                <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all duration-100">
+                  <td className="py-3.5 px-4 font-bold text-slate-800">{r.certificateNumber}</td>
+                  <td className="py-3.5 px-4">
+                    <span className="font-bold text-slate-800 block">{r.childName}</span>
+                    <span className="text-[10px] text-slate-400 block">Mother: {r.motherName}</span>
+                  </td>
+                  <td className="py-3.5 px-4 font-medium text-slate-600">{r.childGender}</td>
+                  <td className="py-3.5 px-4 text-slate-500 font-medium">{r.birthDate}</td>
+                  <td className="py-3.5 px-4">{getStatusBadge(r.status)}</td>
+                  <td className="py-3.5 px-4">
+                    {r.duplicateStatus === 'POTENTIAL_DUPLICATE' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                        <ShieldAlert className="h-3.5 w-3.5" />
+                        Duplicate Alert
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-200">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        Unique
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3.5 px-4 text-center">
+                    <button
+                      onClick={() => setSelectedRecord(r)}
+                      className="btn-secondary py-1 px-2.5 text-xs inline-flex items-center gap-1 hover:border-teal-500 hover:text-teal-700"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>Inspect</span>
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {records.map((r) => (
-                  <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all duration-100">
-                    <td className="py-3.5 px-4 font-bold text-slate-800">{r.certificateNumber}</td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-800 block">{r.childName}</span>
-                      <span className="text-[10px] text-slate-400 block">Mother: {r.motherName}</span>
-                    </td>
-                    <td className="py-3.5 px-4 font-medium text-slate-600">{r.childGender}</td>
-                    <td className="py-3.5 px-4 text-slate-500 font-medium">{r.birthDate}</td>
-                    <td className="py-3.5 px-4">{getStatusBadge(r.status)}</td>
-                    <td className="py-3.5 px-4">
-                      {r.duplicateStatus === 'POTENTIAL_DUPLICATE' ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                          <ShieldAlert className="h-3.5 w-3.5" />
-                          Duplicate Alert
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-200">
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                          Unique
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <button
-                        onClick={() => setSelectedRecord(r)}
-                        className="btn-secondary py-1 px-2.5 text-xs inline-flex items-center gap-1 hover:border-teal-500 hover:text-teal-700"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        <span>Inspect</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile View */}
+        <div className="block sm:hidden divide-y divide-slate-100">
+          {records.map((r) => (
+            <div key={r.id} className="p-4 space-y-3 text-xs bg-white">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="font-mono font-bold text-slate-800 text-[10px] block">Cert #: {r.certificateNumber}</span>
+                  <span className="font-bold text-slate-800 text-sm block mt-0.5">{r.childName}</span>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">Mother: {r.motherName}</span>
+                </div>
+                {getStatusBadge(r.status)}
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-lg space-y-1.5 text-[10px] text-slate-500 font-medium">
+                <div className="flex justify-between">
+                  <span>Gender:</span>
+                  <strong className="text-slate-700">{r.childGender}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Birth Date:</span>
+                  <strong className="text-slate-700">{r.birthDate}</strong>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Duplicate Status:</span>
+                  {r.duplicateStatus === 'POTENTIAL_DUPLICATE' ? (
+                    <span className="text-red-600 font-bold flex items-center gap-1">
+                      <ShieldAlert className="h-3 w-3" />
+                      Duplicate Alert
+                    </span>
+                  ) : (
+                    <span className="text-green-600 font-bold flex items-center gap-1">
+                      <ShieldCheck className="h-3 w-3" />
+                      Unique
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-1 flex">
+                <button
+                  onClick={() => setSelectedRecord(r)}
+                  className="btn-secondary py-2 px-3 text-[10px] inline-flex items-center gap-1.5 flex-1 justify-center hover:border-teal-500 hover:text-teal-700 shadow-xs"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  <span>Inspect Record</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+          </>
         )}
       </div>
 

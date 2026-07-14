@@ -281,7 +281,8 @@ export default function DashboardPage() {
           <p className="text-[10px] text-slate-400">Latest administrative and registry workflow tracking</p>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Desktop View */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
@@ -319,6 +320,39 @@ export default function DashboardPage() {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile View */}
+        <div className="block sm:hidden space-y-3">
+          {recentActivities.length === 0 ? (
+            <span className="text-xs text-slate-400 italic block text-center py-6">No recent activities.</span>
+          ) : (
+            recentActivities.map((act) => {
+              let badgeColor = 'bg-slate-100 text-slate-700';
+              if (act.action.includes('CREATE')) badgeColor = 'bg-green-50 text-green-700 border-green-200';
+              else if (act.action.includes('APPROVE') || act.action.includes('SUBMIT')) badgeColor = 'bg-teal-50 text-teal-700 border-teal-200';
+              else if (act.action.includes('LOGIN')) badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+              else if (act.action.includes('RESET') || act.action.includes('CHANGE')) badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+
+              return (
+                <div key={act.id} className="p-3 border border-slate-100 rounded-xl space-y-2 text-xs bg-slate-50/20">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-bold text-slate-800 block leading-tight truncate max-w-[190px]" title={act.userEmail}>{act.userEmail}</span>
+                      <span className="text-[9px] text-slate-400 block mt-0.5">{act.userRole}</span>
+                    </div>
+                    <span className={`inline-block px-1.5 py-0.5 border rounded-[4px] text-[8px] font-bold shrink-0 ${badgeColor}`}>
+                      {act.action}
+                    </span>
+                  </div>
+                  <p className="text-slate-600 font-medium leading-normal">{act.description}</p>
+                  <span className="text-[9px] text-slate-400 block font-medium">
+                    {new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(act.timestamp).toLocaleDateString()}
+                  </span>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

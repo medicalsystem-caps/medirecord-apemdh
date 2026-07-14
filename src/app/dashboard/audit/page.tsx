@@ -162,49 +162,87 @@ export default function AuditLogsPage() {
             <p className="text-xs text-slate-400">Modify your filters or queries to check older dates.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">Operator Info</th>
-                  <th className="py-3 px-4">Action Type</th>
-                  <th className="py-3 px-4">Detailed Description</th>
-                  <th className="py-3 px-4">IP Address</th>
-                  <th className="py-3 px-4 text-right">Timestamp</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.map((log) => {
-                  let actionBadge = 'bg-slate-100 text-slate-700 border-slate-200';
-                  if (log.action.includes('CREATE')) actionBadge = 'bg-green-50 text-green-700 border-green-200';
-                  else if (log.action.includes('APPROVE') || log.action.includes('SUBMIT') || log.action.includes('CERTIFY') || log.action.includes('VERIFY')) actionBadge = 'bg-teal-50 text-teal-700 border-teal-200';
-                  else if (log.action.includes('LOGIN')) actionBadge = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-                  else if (log.action.includes('RESET') || log.action.includes('CHANGE')) actionBadge = 'bg-amber-50 text-amber-700 border-amber-200';
+          <>
+            {/* Desktop View */}
+            <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50 text-slate-400 font-bold uppercase tracking-wider">
+                <th className="py-3 px-4">Operator Info</th>
+                <th className="py-3 px-4">Action Type</th>
+                <th className="py-3 px-4">Detailed Description</th>
+                <th className="py-3 px-4">IP Address</th>
+                <th className="py-3 px-4 text-right">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log) => {
+                let actionBadge = 'bg-slate-100 text-slate-700 border-slate-200';
+                if (log.action.includes('CREATE')) actionBadge = 'bg-green-50 text-green-700 border-green-200';
+                else if (log.action.includes('APPROVE') || log.action.includes('SUBMIT') || log.action.includes('CERTIFY') || log.action.includes('VERIFY')) actionBadge = 'bg-teal-50 text-teal-700 border-teal-200';
+                else if (log.action.includes('LOGIN')) actionBadge = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                else if (log.action.includes('RESET') || log.action.includes('CHANGE')) actionBadge = 'bg-amber-50 text-amber-700 border-amber-200';
 
-                  return (
-                    <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <span className="font-bold text-slate-800 block">{log.userEmail}</span>
-                        <span className="text-[9px] text-slate-400 block font-semibold">{log.userRole}</span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className={`inline-block px-2 py-0.5 border rounded text-[10px] font-bold ${actionBadge}`}>
-                          {log.action}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 font-medium text-slate-600 max-w-xs md:max-w-sm truncate" title={log.description}>
-                        {log.description}
-                      </td>
-                      <td className="py-3.5 px-4 font-mono font-medium text-slate-400">{log.ipAddress || '127.0.0.1'}</td>
-                      <td className="py-3.5 px-4 text-right text-slate-500 font-medium">
-                        {new Date(log.timestamp).toLocaleDateString()} {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                return (
+                  <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <span className="font-bold text-slate-800 block">{log.userEmail}</span>
+                      <span className="text-[9px] text-slate-400 block font-semibold">{log.userRole}</span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className={`inline-block px-2 py-0.5 border rounded text-[10px] font-bold ${actionBadge}`}>
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 font-medium text-slate-600 max-w-xs md:max-w-sm truncate" title={log.description}>
+                      {log.description}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono font-medium text-slate-400">{log.ipAddress || '127.0.0.1'}</td>
+                    <td className="py-3.5 px-4 text-right text-slate-500 font-medium">
+                      {new Date(log.timestamp).toLocaleDateString()} {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile View */}
+        <div className="block sm:hidden divide-y divide-slate-100">
+          {logs.map((log) => {
+            let actionBadge = 'bg-slate-100 text-slate-700 border-slate-200';
+            if (log.action.includes('CREATE')) actionBadge = 'bg-green-50 text-green-700 border-green-200';
+            else if (log.action.includes('APPROVE') || log.action.includes('SUBMIT') || log.action.includes('CERTIFY') || log.action.includes('VERIFY')) actionBadge = 'bg-teal-50 text-teal-700 border-teal-200';
+            else if (log.action.includes('LOGIN')) actionBadge = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+            else if (log.action.includes('RESET') || log.action.includes('CHANGE')) actionBadge = 'bg-amber-50 text-amber-700 border-amber-200';
+
+            return (
+              <div key={log.id} className="p-4 space-y-3 text-xs bg-white">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="font-bold text-slate-800 block leading-tight truncate max-w-[190px]" title={log.userEmail}>{log.userEmail}</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5">{log.userRole}</span>
+                  </div>
+                  <span className={`inline-block px-1.5 py-0.5 border rounded-[4px] text-[8px] font-bold shrink-0 ${actionBadge}`}>
+                    {log.action}
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 p-2.5 rounded-lg space-y-1 text-[10px] text-slate-500 font-medium">
+                  <p className="text-slate-600 font-semibold leading-normal">{log.description}</p>
+                  <div className="flex justify-between items-center pt-1.5 border-t border-slate-200/50 mt-1.5">
+                    <span>IP: <strong className="text-slate-600 font-mono">{log.ipAddress || '127.0.0.1'}</strong></span>
+                    <span>
+                      {new Date(log.timestamp).toLocaleDateString()} {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+          </>
         )}
       </div>
 

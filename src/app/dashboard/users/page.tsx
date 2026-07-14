@@ -248,83 +248,154 @@ export default function UserManagementPage() {
             <span className="text-xs text-slate-500">Querying user accounts...</span>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">Staff Member</th>
-                  <th className="py-3 px-4">Authorized Role</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Password State</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((u) => (
-                  <tr key={u.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all duration-100">
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-800 block">{u.name}</span>
-                      <span className="text-[10px] text-slate-400 block">{u.email}</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-700">{u.role}</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                        u.status === 'ACTIVE'
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-red-50 text-red-700 border-red-200'
-                      }`}>
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      {u.mustChangePassword ? (
-                        <span className="text-amber-600 font-semibold block">Must Reset Password</span>
-                      ) : (
-                        <span className="text-slate-400 block">Verified / Secure</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
-                      {/* Password Reset */}
-                      <button
-                        onClick={() => handleResetPassword(u.id)}
-                        className="btn-secondary py-1 px-2 text-[10px] inline-flex items-center gap-1.5 hover:border-amber-500 hover:text-amber-700"
-                        title="Force Temporary Password Reset"
-                      >
-                        <KeyRound className="h-3.5 w-3.5" />
-                        <span>Reset</span>
-                      </button>
+          <>
+            {/* Desktop View */}
+            <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50 text-slate-400 font-bold uppercase tracking-wider">
+                <th className="py-3 px-4">Staff Member</th>
+                <th className="py-3 px-4">Authorized Role</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Password State</th>
+                <th className="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.map((u) => (
+                <tr key={u.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all duration-100">
+                  <td className="py-3.5 px-4">
+                    <span className="font-bold text-slate-800 block">{u.name}</span>
+                    <span className="text-[10px] text-slate-400 block">{u.email}</span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className="font-bold text-slate-700">{u.role}</span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                      u.status === 'ACTIVE'
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : 'bg-red-50 text-red-700 border-red-200'
+                    }`}>
+                      {u.status}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    {u.mustChangePassword ? (
+                      <span className="text-amber-600 font-semibold block">Must Reset Password</span>
+                    ) : (
+                      <span className="text-slate-400 block">Verified / Secure</span>
+                    )}
+                  </td>
+                  <td className="py-3.5 px-4 text-right space-x-2">
+                    {/* Password Reset */}
+                    <button
+                      onClick={() => handleResetPassword(u.id)}
+                      className="btn-secondary py-1 px-2 text-[10px] inline-flex items-center gap-1.5 hover:border-amber-500 hover:text-amber-700"
+                      title="Force Temporary Password Reset"
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      <span>Reset</span>
+                    </button>
 
-                      {/* Deactivate/Activate toggle */}
-                      {u.id !== currentUser.id && (
-                        <button
-                          onClick={() => handleToggleStatus(u.id)}
-                          className={`btn-secondary py-1 px-2 text-[10px] inline-flex items-center gap-1.5 ${
-                            u.status === 'ACTIVE'
-                              ? 'hover:border-red-500 hover:text-red-700'
-                              : 'hover:border-green-500 hover:text-green-700'
-                          }`}
-                        >
-                          {u.status === 'ACTIVE' ? (
-                            <>
-                              <UserX className="h-3.5 w-3.5" />
-                              <span>Deactivate</span>
-                            </>
-                          ) : (
-                            <>
-                              <UserCheck className="h-3.5 w-3.5" />
-                              <span>Activate</span>
-                            </>
-                          )}
-                        </button>
+                    {/* Deactivate/Activate toggle */}
+                    {u.id !== currentUser.id && (
+                      <button
+                        onClick={() => handleToggleStatus(u.id)}
+                        className={`btn-secondary py-1 px-2 text-[10px] inline-flex items-center gap-1.5 ${
+                          u.status === 'ACTIVE'
+                            ? 'hover:border-red-500 hover:text-red-700'
+                            : 'hover:border-green-500 hover:text-green-700'
+                        }`}
+                      >
+                        {u.status === 'ACTIVE' ? (
+                          <>
+                            <UserX className="h-3.5 w-3.5" />
+                            <span>Deactivate</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="h-3.5 w-3.5" />
+                            <span>Activate</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile View */}
+        <div className="block sm:hidden divide-y divide-slate-100">
+          {filteredUsers.length === 0 ? (
+            <span className="text-xs text-slate-400 italic block text-center py-10">No users found.</span>
+          ) : (
+            filteredUsers.map((u) => (
+              <div key={u.id} className="p-4 space-y-3 text-xs bg-white">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="font-bold text-slate-800 block text-sm">{u.name}</span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">{u.email}</span>
+                  </div>
+                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${
+                    u.status === 'ACTIVE'
+                      ? 'bg-green-50 text-green-700 border-green-200'
+                      : 'bg-red-50 text-red-700 border-red-200'
+                  }`}>
+                    {u.status}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center text-[10px] text-slate-500 font-medium bg-slate-50 p-2 rounded-lg">
+                  <span>Role: <strong className="text-slate-700">{u.role}</strong></span>
+                  <span>
+                    {u.mustChangePassword ? (
+                      <span className="text-amber-600 font-semibold">Must Reset Password</span>
+                    ) : (
+                      <span className="text-slate-400">Verified / Secure</span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex gap-2 pt-1.5">
+                  <button
+                    onClick={() => handleResetPassword(u.id)}
+                    className="btn-secondary py-1.5 px-3 text-[10px] inline-flex items-center gap-1.5 flex-1 justify-center hover:border-amber-500 hover:text-amber-700 shadow-xs"
+                  >
+                    <KeyRound className="h-3.5 w-3.5" />
+                    <span>Reset Password</span>
+                  </button>
+                  {u.id !== currentUser.id && (
+                    <button
+                      onClick={() => handleToggleStatus(u.id)}
+                      className={`btn-secondary py-1.5 px-3 text-[10px] inline-flex items-center gap-1.5 flex-1 justify-center shadow-xs ${
+                        u.status === 'ACTIVE'
+                          ? 'hover:border-red-500 hover:text-red-700'
+                          : 'hover:border-green-500 hover:text-green-700'
+                      }`}
+                    >
+                      {u.status === 'ACTIVE' ? (
+                        <>
+                          <UserX className="h-3.5 w-3.5" />
+                          <span>Deactivate</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserCheck className="h-3.5 w-3.5" />
+                          <span>Activate</span>
+                        </>
                       )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+          </>
         )}
       </div>
 
