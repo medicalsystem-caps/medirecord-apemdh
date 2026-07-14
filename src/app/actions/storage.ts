@@ -1,6 +1,6 @@
 'use server';
 
-import { getStorageStatus, setStorageUsage } from '@/lib/services/storage';
+import { getStorageStatus, setStorageUsage, getStorageFiles } from '@/lib/services/storage';
 import { getDb, saveDb } from '@/lib/services/db';
 import { SystemSettings } from '@/lib/types';
 import { getCurrentUser } from '@/lib/services/auth';
@@ -32,31 +32,5 @@ export async function setStorageUsageAction(bytes: number): Promise<SystemSettin
 }
 
 export async function getR2FilesAction(): Promise<{ name: string; size: number; mimeType: string; uploadedAt: string }[]> {
-  const db = await getDb();
-  // Generate random list of files for monitoring dashboard based on records
-  const files: { name: string; size: number; mimeType: string; uploadedAt: string }[] = [];
-  
-  db.birth_records.forEach(r => {
-    r.supportingDocuments.forEach(doc => {
-      files.push({
-        name: doc,
-        size: Math.floor(Math.random() * 2000000) + 500000, // 500KB - 2.5MB
-        mimeType: doc.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
-        uploadedAt: r.createdAt
-      });
-    });
-  });
-
-  db.death_records.forEach(r => {
-    r.supportingDocuments.forEach(doc => {
-      files.push({
-        name: doc,
-        size: Math.floor(Math.random() * 2000000) + 500000,
-        mimeType: doc.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
-        uploadedAt: r.createdAt
-      });
-    });
-  });
-
-  return files;
+  return await getStorageFiles();
 }

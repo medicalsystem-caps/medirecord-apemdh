@@ -2,6 +2,7 @@
 
 import { getDb } from '@/lib/services/db';
 import { getCurrentUser } from '@/lib/services/auth';
+import { getStorageStatus } from '@/lib/services/storage';
 
 export async function getDashboardStatsAction() {
   const currentUser = await getCurrentUser();
@@ -49,10 +50,8 @@ export async function getDashboardStatsAction() {
   }));
 
   // Monthly statistics compilation (e.g. for January to December 2026)
-  // Let's create an array of 6 months leading up to July 2026
   const months = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
   const monthlyData = months.map((month, index) => {
-    // Generate some stable, nice-looking numbers but filter by actual month if timestamps are present
     const monthNum = index + 2; // Feb is 2, Jul is 7
     const birthCount = births.filter(b => {
       const date = new Date(b.createdAt);
@@ -71,6 +70,8 @@ export async function getDashboardStatsAction() {
     };
   });
 
+  const storageSettings = await getStorageStatus();
+
   return {
     stats: {
       totalBirths,
@@ -81,6 +82,6 @@ export async function getDashboardStatsAction() {
     },
     monthlyData,
     recentActivities,
-    storage: db.settings,
+    storage: storageSettings,
   };
 }

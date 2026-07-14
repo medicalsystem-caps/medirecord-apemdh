@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { getDb, saveDb } from './db';
 import { SystemSettings } from '../types';
 
@@ -33,8 +33,111 @@ function ensureUploadsDirectory() {
   }
 }
 
+// Dynamically calculate actual storage usage in bytes (R2 cloud or local filesystem)
+export async function calculateActualStorageUsage(): Promise<number> {
+  // --- CASE A: CLOUDFLARE R2 ---
+  if (s3Client && r2BucketName) {
+    try {
+      let totalSize = 0;
+      let isTruncated = true;
+      let continuationToken: string | undefined = undefined;
+
+      while (isTruncated) {
+        const response: any = await s3Client.send(new ListObjectsV2Command({
+          Bucket: r2BucketName,
+          ContinuationToken: continuationToken,
+        }));
+
+        if (response.Contents) {
+          for (const item of response.Contents) {
+            totalSize += item.Size || 0;
+          }
+        }
+
+        isTruncated = !!response.IsTruncated;
+        continuationToken = response.NextContinuationToken;
+      }
+      return totalSize;
+    } catch (err) {
+      console.error('Failed to list objects in Cloudflare R2 bucket:', err);
+    }
+  }
+
+  // --- CASE B: LOCAL FS FALLBACK ---
+  try {
+    ensureUploadsDirectory();
+    const files = fs.readdirSync(UPLOADS_DIR);
+    let totalSize = 0;
+    for (const file of files) {
+      const filePath = path.join(UPLOADS_DIR, file);
+      const stats = fs.statSync(filePath);
+      if (stats.isFile()) {
+        totalSize += stats.size;
+      }
+    }
+    return totalSize;
+  } catch (err) {
+    console.error('Failed to calculate local folder storage size:', err);
+    return 0;
+  }
+}
+
+// Fetch the list of actual files (R2 cloud or local filesystem)
+export async function getStorageFiles(): Promise<{ name: string; size: number; mimeType: string; uploadedAt: string }[]> {
+  // --- CASE A: CLOUDFLARE R2 ---
+  if (s3Client && r2BucketName) {
+    try {
+      const response = await s3Client.send(new ListObjectsV2Command({
+        Bucket: r2BucketName,
+      }));
+
+      if (!response.Contents) return [];
+
+      return response.Contents.map((item) => {
+        const key = item.Key || 'unknown_file';
+        return {
+          name: key,
+          size: item.Size || 0,
+          mimeType: key.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
+          uploadedAt: item.LastModified ? item.LastModified.toISOString() : new Date().toISOString(),
+        };
+      });
+    } catch (err) {
+      console.error('Failed to list R2 files:', err);
+    }
+  }
+
+  // --- CASE B: LOCAL FS FALLBACK ---
+  try {
+    ensureUploadsDirectory();
+    const files = fs.readdirSync(UPLOADS_DIR);
+    return files.map((file) => {
+      const filePath = path.join(UPLOADS_DIR, file);
+      const stats = fs.statSync(filePath);
+      return {
+        name: file,
+        size: stats.size,
+        mimeType: file.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
+        uploadedAt: stats.mtime.toISOString(),
+      };
+    });
+  } catch (err) {
+    console.error('Failed to read local files list:', err);
+    return [];
+  }
+}
+
 export async function getStorageStatus(): Promise<SystemSettings> {
+  const actualUsageBytes = await calculateActualStorageUsage();
   const db = await getDb();
+  
+  db.settings.storageUsageBytes = actualUsageBytes;
+  
+  // Disable uploads if we exceed 9.5 GB
+  const LIMIT_9_5_GB = 9.5 * 1024 * 1024 * 1024;
+  db.settings.uploadsDisabled = actualUsageBytes >= LIMIT_9_5_GB;
+  
+  await saveDb(db);
   return db.settings;
 }
 
@@ -53,14 +156,12 @@ export async function setStorageUsage(bytes: number): Promise<SystemSettings> {
 export async function uploadFile(
   file: File
 ): Promise<{ filename: string; url: string; size: number }> {
-  const db = await getDb();
-  
+  const actualUsage = await calculateActualStorageUsage();
   const fileBytes = file.size;
-  const currentUsage = db.settings.storageUsageBytes;
   const LIMIT_9_5_GB = 9.5 * 1024 * 1024 * 1024;
   
   // Block if storage has reached limits
-  if (currentUsage >= LIMIT_9_5_GB || currentUsage + fileBytes >= LIMIT_9_5_GB) {
+  if (actualUsage >= LIMIT_9_5_GB || actualUsage + fileBytes >= LIMIT_9_5_GB) {
     throw new Error('Upload disabled: Cloudflare R2 storage has reached its 9.5 GB limit.');
   }
 
@@ -88,13 +189,10 @@ export async function uploadFile(
         ContentType: file.type,
       }));
 
-      // Update storage usage counter in database
-      const newUsage = currentUsage + fileBytes;
-      db.settings.storageUsageBytes = newUsage;
-      db.settings.uploadsDisabled = newUsage >= LIMIT_9_5_GB;
-      await saveDb(db);
-
       const cleanedPublicUrl = r2PublicUrl.endsWith('/') ? r2PublicUrl.slice(0, -1) : r2PublicUrl;
+
+      // Update storage status cache
+      await getStorageStatus();
 
       return {
         filename: file.name,
@@ -111,11 +209,8 @@ export async function uploadFile(
   const filePath = path.join(UPLOADS_DIR, cleanName);
   fs.writeFileSync(filePath, buffer);
 
-  // Update storage usage counter
-  const newUsage = currentUsage + fileBytes;
-  db.settings.storageUsageBytes = newUsage;
-  db.settings.uploadsDisabled = newUsage >= LIMIT_9_5_GB;
-  await saveDb(db);
+  // Update storage status cache
+  await getStorageStatus();
 
   return {
     filename: file.name,
@@ -150,12 +245,6 @@ export async function deleteFile(cleanName: string, sizeBytes: number): Promise<
     }
   }
 
-  // Re-adjust storage count in database
-  const db = await getDb();
-  const newUsage = Math.max(0, db.settings.storageUsageBytes - sizeBytes);
-  db.settings.storageUsageBytes = newUsage;
-  
-  const LIMIT_9_5_GB = 9.5 * 1024 * 1024 * 1024;
-  db.settings.uploadsDisabled = newUsage >= LIMIT_9_5_GB;
-  await saveDb(db);
+  // Update storage status cache
+  await getStorageStatus();
 }
