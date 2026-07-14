@@ -61,10 +61,11 @@ export default function ChangePasswordPage() {
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-teal-700" />
         
         <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="MediRecord Logo" className="h-10 w-10 object-contain" />
+          <img src="/logo.png" alt="MediRecord Logo" className="h-12 w-auto object-contain" />
+          <div className="w-px h-8 bg-slate-200" />
           <div>
-            <span className="text-[10px] font-bold text-teal-800 tracking-wider uppercase">MediRecord security</span>
-            <h2 className="text-lg font-bold text-slate-800">Mandatory Password Change</h2>
+            <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Security Portal</span>
+            <h2 className="text-sm font-bold text-slate-800">Mandatory Password Change</h2>
           </div>
         </div>
 

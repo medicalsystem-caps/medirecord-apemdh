@@ -39,10 +39,9 @@ export default function LoginPage() {
         
         {/* Header Logo & Title */}
         <div className="flex flex-col items-center text-center mb-6">
-          <img src="/logo.png" alt="MediRecord Logo" className="h-14 w-14 object-contain mb-3" />
+          <img src="/logo.png" alt="MediRecord Logo" className="h-20 w-auto object-contain mb-4" />
           <span className="text-[10px] font-bold text-teal-800 tracking-widest uppercase">APEMDH Civil Registry Portal</span>
-          <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight mt-1">MediRecord</h1>
-          <p className="text-slate-500 text-xs mt-1.5 max-w-xs">
+          <p className="text-slate-500 text-xs mt-2.5 max-w-xs">
             Enter your credentials to securely manage civil registry documents.
           </p>
         </div>

@@ -184,7 +184,7 @@ export default function UserManagementPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 m-auto h-fit w-full max-w-md bg-white border border-slate-200 p-6 rounded-3xl z-50 shadow-2xl relative overflow-hidden"
+              className="fixed inset-0 m-auto h-fit w-full max-w-md bg-white border border-slate-200 p-6 rounded-3xl z-50 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-amber-500" />
               
@@ -415,7 +415,7 @@ export default function UserManagementPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 m-auto h-fit w-full max-w-md bg-white border border-slate-200 p-6 rounded-3xl z-50 shadow-2xl relative overflow-hidden"
+              className="fixed inset-0 m-auto h-fit w-full max-w-md bg-white border border-slate-200 p-6 rounded-3xl z-50 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-teal-700" />
               

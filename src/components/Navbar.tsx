@@ -20,6 +20,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: Navba
   const [storage, setStorage] = useState<SystemSettings | null>(null);
   const [notifications, setNotifications] = useState<{ id: string; type: 'warning' | 'info' | 'danger'; message: string; link: string }[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const fetchNavbarData = async () => {
     try {
@@ -207,7 +208,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: Navba
             <span className="text-[10px] text-slate-400 block font-semibold leading-none mt-0.5">{user.role}</span>
           </div>
           <button
-            onClick={logout}
+            onClick={() => setShowSignOutConfirm(true)}
             className="p-1.5 hover:bg-red-50 text-red-500 hover:text-red-700 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
             title="Sign Out"
           >
@@ -216,6 +217,58 @@ export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: Navba
         </div>
 
       </div>
+
+      {/* Sign Out Confirmation Modal */}
+      <AnimatePresence>
+        {showSignOutConfirm && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSignOutConfirm(false)}
+              className="fixed inset-0 bg-slate-900 z-50"
+            />
+            
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 m-auto h-fit w-full max-w-sm bg-white border border-slate-200 p-6 rounded-3xl z-[60] shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-red-600" />
+              
+              <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+                <LogOut className="h-5 w-5 text-red-600" />
+                <h3 className="font-bold text-slate-800 text-sm">Confirm Sign Out</h3>
+              </div>
+
+              <div className="mt-4 space-y-4">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Are you sure you want to end your current session and sign out of the system? Any unsaved edits will be discarded.
+                </p>
+                
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => setShowSignOutConfirm(false)}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="btn-primary bg-red-600 hover:bg-red-700 border-none text-white font-semibold"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

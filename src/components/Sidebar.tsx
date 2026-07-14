@@ -29,6 +29,7 @@ interface SidebarProps {
 export default function Sidebar({ collapsed, setCollapsed, className }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [showSignOutConfirm, setShowSignOutConfirm] = React.useState(false);
 
   if (!user) return null;
 
@@ -195,8 +196,8 @@ export default function Sidebar({ collapsed, setCollapsed, className }: SidebarP
       {/* Footer / Logout */}
       <div className="p-3 border-t border-slate-100">
         <button
-          onClick={logout}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50/50 transition-all duration-150 group relative"
+          onClick={() => setShowSignOutConfirm(true)}
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50/50 transition-all duration-150 group relative cursor-pointer"
         >
           <LogOut className="h-5 w-5 text-red-500 group-hover:text-red-600 shrink-0" />
           {!collapsed && (
@@ -215,6 +216,58 @@ export default function Sidebar({ collapsed, setCollapsed, className }: SidebarP
           )}
         </button>
       </div>
+
+      {/* Sign Out Confirmation Modal */}
+      <AnimatePresence>
+        {showSignOutConfirm && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSignOutConfirm(false)}
+              className="fixed inset-0 bg-slate-900 z-50"
+            />
+            
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 m-auto h-fit w-full max-w-sm bg-white border border-slate-200 p-6 rounded-3xl z-[60] shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-red-600" />
+              
+              <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+                <LogOut className="h-5 w-5 text-red-600" />
+                <h3 className="font-bold text-slate-800 text-sm">Confirm Sign Out</h3>
+              </div>
+
+              <div className="mt-4 space-y-4">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Are you sure you want to end your current session and sign out of the system? Any unsaved edits will be discarded.
+                </p>
+                
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => setShowSignOutConfirm(false)}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="btn-primary bg-red-600 hover:bg-red-700 border-none text-white font-semibold"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.aside>
   );
 }
