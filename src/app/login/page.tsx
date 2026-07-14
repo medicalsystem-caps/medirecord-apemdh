@@ -27,8 +27,13 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden p-4"
-      style={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e8f5f5 30%, #f0f9ff 60%, #f8fafc 100%)' }}
+      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden p-4 bg-slate-900"
+      style={{
+        backgroundImage: 'linear-gradient(to bottom, rgba(240, 253, 250, 0.75), rgba(248, 250, 252, 0.85)), url("/bg.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
     >
       {/* Decorative background blobs */}
       <div

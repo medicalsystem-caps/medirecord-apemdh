@@ -51,7 +51,28 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-radial from-teal-50/50 via-slate-50 to-slate-100 p-4">
+    <div
+      className="min-h-screen flex items-center justify-center relative overflow-hidden p-4 bg-slate-900"
+      style={{
+        backgroundImage: 'linear-gradient(to bottom, rgba(240, 253, 250, 0.75), rgba(248, 250, 252, 0.85)), url("/bg.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Decorative background blobs */}
+      <div
+        className="absolute top-0 left-0 w-96 h-96 rounded-full opacity-20 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #0d9488 0%, transparent 70%)', transform: 'translate(-40%, -40%)' }}
+      />
+      <div
+        className="absolute bottom-0 right-0 w-80 h-80 rounded-full opacity-15 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #0284c7 0%, transparent 70%)', transform: 'translate(30%, 30%)' }}
+      />
+      <div
+        className="absolute top-1/2 left-1/4 w-64 h-64 rounded-full opacity-10 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #5eead4 0%, transparent 70%)', transform: 'translate(-50%, -50%)' }}
+      />
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
