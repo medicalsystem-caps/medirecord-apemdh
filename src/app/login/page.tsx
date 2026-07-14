@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { HeartPulse, KeyRound, Mail, ShieldAlert, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, Mail, ShieldAlert, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
@@ -26,32 +26,57 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-radial from-teal-50/50 via-slate-50 to-slate-100 p-4">
-      
+    <div
+      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden p-4"
+      style={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e8f5f5 30%, #f0f9ff 60%, #f8fafc 100%)' }}
+    >
+      {/* Decorative background blobs */}
+      <div
+        className="absolute top-0 left-0 w-96 h-96 rounded-full opacity-20 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #0d9488 0%, transparent 70%)', transform: 'translate(-40%, -40%)' }}
+      />
+      <div
+        className="absolute bottom-0 right-0 w-80 h-80 rounded-full opacity-15 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #0284c7 0%, transparent 70%)', transform: 'translate(30%, 30%)' }}
+      />
+      <div
+        className="absolute top-1/2 left-1/4 w-64 h-64 rounded-full opacity-10 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #5eead4 0%, transparent 70%)', transform: 'translate(-50%, -50%)' }}
+      />
+
       {/* Centered Login Card */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-xl shadow-teal-900/5 relative overflow-hidden"
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md bg-white/90 backdrop-blur-sm border border-white/80 rounded-3xl p-7 md:p-9 shadow-2xl shadow-teal-900/10 relative overflow-hidden"
       >
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-teal-700" />
-        
+        {/* Top accent gradient bar */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-600 via-teal-500 to-cyan-500" />
+
         {/* Header Logo & Title */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <img src="/logo.png" alt="MediRecord Logo" className="h-20 w-auto object-contain mb-4" />
-          <span className="text-[10px] font-bold text-teal-800 tracking-widest uppercase">APEMDH Civil Registry Portal</span>
-          <p className="text-slate-500 text-xs mt-2.5 max-w-xs">
+        <div className="flex flex-col items-center text-center mb-7">
+          <div className="mb-4 p-2 bg-teal-50 rounded-2xl ring-4 ring-teal-100/60">
+            <img src="/logo.png" alt="MediRecord Logo" className="h-16 w-auto object-contain" />
+          </div>
+          <span className="text-[10px] font-bold text-teal-700 tracking-widest uppercase bg-teal-50 px-3 py-1 rounded-full">
+            APEMDH Civil Registry Portal
+          </span>
+          <p className="text-slate-500 text-xs mt-3 max-w-xs leading-relaxed">
             Enter your credentials to securely manage civil registry documents.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-100 text-red-700 rounded-lg text-xs flex items-start gap-2 animate-shake">
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3 bg-red-50 border border-red-100 text-red-700 rounded-xl text-xs flex items-start gap-2 animate-shake"
+            >
               <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{error}</span>
-            </div>
+            </motion.div>
           )}
 
           <div className="space-y-1.5">
@@ -86,36 +111,27 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5 rounded"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5 rounded transition-colors"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full py-2.5 mt-2 flex items-center justify-center font-bold text-sm tracking-wide"
-          >
+          <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
             {loading ? (
-              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               'Sign In'
             )}
           </button>
         </form>
 
-        <div className="mt-6 text-center border-t border-slate-100 pt-4">
-          <span className="text-[9px] text-slate-400 uppercase tracking-widest block font-medium">
-            Authorized Personnel Only
-          </span>
-          <span className="text-[9px] text-slate-400 uppercase tracking-widest block font-medium mt-1">
-            Secured with TLS 1.3 & RLS Policies
-          </span>
+        <div className="mt-6 flex items-center justify-center gap-2 border-t border-slate-100 pt-5 text-[9px] text-slate-400 uppercase tracking-widest font-medium">
+          <ShieldCheck className="h-3.5 w-3.5 text-teal-500 shrink-0" />
+          <span>Authorized Personnel Only · TLS 1.3 &amp; RLS Secured</span>
         </div>
       </motion.div>
-      
     </div>
   );
 }

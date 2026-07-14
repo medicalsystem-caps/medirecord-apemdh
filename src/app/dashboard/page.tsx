@@ -105,10 +105,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white border border-slate-200 p-5 rounded-2xl shadow-xs">
+      <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-gradient-to-br from-teal-700 via-teal-800 to-teal-900 p-5 rounded-2xl shadow-lg overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute -top-8 -right-8 w-32 h-32 bg-teal-600/30 rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 right-1/3 w-20 h-20 bg-cyan-400/10 rounded-full pointer-events-none" />
         <div>
-          <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">APEMDH Civil Registry Portal</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Welcome back, <span className="font-semibold text-slate-700">{user?.name}</span>. Today is {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.</p>
+          <h1 className="text-lg font-extrabold text-white tracking-tight">APEMDH Civil Registry Portal</h1>
+          <p className="text-teal-200 text-xs mt-0.5">Welcome back, <span className="font-bold text-white">{user?.name}</span>. Today is {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.</p>
         </div>
       </div>
 
@@ -122,6 +125,8 @@ export default function DashboardPage() {
             icon: Baby,
             color: 'text-blue-600',
             bg: 'bg-blue-50',
+            border: 'border-blue-100',
+            bar: 'bg-blue-400',
           },
           {
             title: 'Total Death Records',
@@ -130,6 +135,8 @@ export default function DashboardPage() {
             icon: FileText,
             color: 'text-rose-600',
             bg: 'bg-rose-50',
+            border: 'border-rose-100',
+            bar: 'bg-rose-400',
           },
           {
             title: 'Pending Action',
@@ -138,6 +145,8 @@ export default function DashboardPage() {
             icon: FileClock,
             color: 'text-amber-600',
             bg: 'bg-amber-50',
+            border: 'border-amber-100',
+            bar: 'bg-amber-400',
           },
           {
             title: 'Archived Documents',
@@ -146,6 +155,8 @@ export default function DashboardPage() {
             icon: Archive,
             color: 'text-teal-600',
             bg: 'bg-teal-50',
+            border: 'border-teal-100',
+            bar: 'bg-teal-500',
           },
         ].map((m, idx) => {
           const Icon = m.icon;
@@ -156,15 +167,15 @@ export default function DashboardPage() {
               animate="visible"
               variants={cardVariants}
               key={m.title}
-              className="bg-white border border-slate-200 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 flex items-start justify-between group"
+              className={`bg-white border ${m.border} p-5 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 flex items-start justify-between group cursor-default`}
             >
-              <div className="space-y-1">
-                <span className="text-xs text-slate-400 font-semibold block">{m.title}</span>
-                <span className="text-2xl font-black text-slate-800 block group-hover:scale-105 transition-transform origin-left">{m.value}</span>
-                <span className="text-[10px] text-slate-500 block">{m.desc}</span>
+              <div className="space-y-1 flex-1 min-w-0">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{m.title}</span>
+                <span className="text-3xl font-black text-slate-800 block group-hover:text-teal-700 transition-colors duration-200">{m.value}</span>
+                <span className="text-[10px] text-slate-500 block leading-relaxed">{m.desc}</span>
               </div>
-              <div className={`p-3 rounded-xl shrink-0 ${m.bg} ${m.color}`}>
-                <Icon className="h-5 w-5" />
+              <div className={`p-3 rounded-2xl shrink-0 ${m.bg}`}>
+                <Icon className={`h-5 w-5 ${m.color}`} />
               </div>
             </motion.div>
           );

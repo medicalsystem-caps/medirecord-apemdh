@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'MediRecord | Civil Registry Document Management System | APEMDH',
   description: 'Secure, web-based civil registry document management system for Alfonso Ponce Enrile Memorial District Hospital.',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+    shortcut: '/logo.png',
+  },
 };
 
 export default function RootLayout({
