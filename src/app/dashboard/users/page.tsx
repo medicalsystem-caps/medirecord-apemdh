@@ -82,6 +82,7 @@ export default function UserManagementPage() {
       setNewName('');
       setNewEmail('');
       setNewRole('MRO');
+      setCreateModalOpen(false);
       fetchUsers();
     } catch (err: any) {
       toast.error(err.message || 'Failed to create user.');
@@ -167,34 +168,63 @@ export default function UserManagementPage() {
         </button>
       </div>
 
-      {/* Temporary Password Notice Panel */}
-      {tempPassword && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-5 bg-amber-50 border-2 border-amber-200 rounded-2xl max-w-lg space-y-3 relative overflow-hidden"
-        >
-          <button onClick={() => setTempPassword(null)} className="absolute top-3.5 right-3.5 p-1 hover:bg-amber-100 rounded text-amber-600">
-            <X className="h-4 w-4" />
-          </button>
-          <div className="flex gap-2 items-center text-amber-800 font-bold text-xs uppercase tracking-wider">
-            <KeyRound className="h-4.5 w-4.5" />
-            <span>Copy Temporary Password</span>
-          </div>
-          <p className="text-xs text-amber-800 leading-normal">
-            A temporary password has been allocated for this user. Copy it now and share it securely. The user is required to reset it upon their first sign in.
-          </p>
-          <div className="flex items-center gap-2 bg-white border border-amber-200 p-2.5 rounded-lg">
-            <span className="font-mono font-bold text-sm text-slate-800 select-all flex-1 tracking-wider">{tempPassword}</span>
-            <button
-              onClick={() => copyToClipboard(tempPassword)}
-              className="p-1.5 hover:bg-slate-50 text-slate-500 rounded border border-slate-200 hover:text-teal-700 transition-colors"
+      {/* Temporary Password Notice Modal */}
+      <AnimatePresence>
+        {tempPassword && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setTempPassword(null)}
+              className="fixed inset-0 bg-slate-900 z-40"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 m-auto h-fit w-full max-w-md bg-white border border-slate-200 p-6 rounded-3xl z-50 shadow-2xl relative overflow-hidden"
             >
-              {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-            </button>
-          </div>
-        </motion.div>
-      )}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-amber-500" />
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2 text-amber-800 font-bold text-xs uppercase tracking-wider">
+                  <KeyRound className="h-4.5 w-4.5" />
+                  <span>Copy Temporary Password</span>
+                </div>
+                <button onClick={() => setTempPassword(null)} className="p-1 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-slate-600">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-4">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  A temporary password has been allocated for this user. Copy it now and share it securely. The user is required to reset it upon their first sign in.
+                </p>
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                  <span className="font-mono font-bold text-sm text-slate-800 select-all flex-1 tracking-wider">{tempPassword}</span>
+                  <button
+                    onClick={() => copyToClipboard(tempPassword)}
+                    className="p-2 hover:bg-white text-slate-500 rounded-lg border border-slate-200 hover:text-teal-700 transition-colors shadow-xs"
+                  >
+                    {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                  </button>
+                </div>
+                
+                <div className="pt-2 flex items-center justify-end">
+                  <button
+                    onClick={() => setTempPassword(null)}
+                    className="btn-primary bg-amber-600 hover:bg-amber-700 border-none"
+                  >
+                    Close & Finish
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Filter Bar */}
       <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-xs">

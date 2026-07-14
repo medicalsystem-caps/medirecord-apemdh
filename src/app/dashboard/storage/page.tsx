@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { getStorageStatusAction, setStorageUsageAction, getR2FilesAction } from '@/app/actions/storage';
+import { getStorageStatusAction, getR2FilesAction } from '@/app/actions/storage';
 import { SystemSettings } from '@/lib/types';
 import {
   HardDrive,
@@ -25,9 +25,7 @@ export default function StorageManagementPage() {
   const [files, setFiles] = useState<{ name: string; size: number; mimeType: string; uploadedAt: string }[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Simulation slider state (represented in GB)
-  const [sliderGB, setSliderGB] = useState(6.2);
-  const [updating, setUpdating] = useState(false);
+
 
   const fetchStorageData = async () => {
     try {
@@ -36,7 +34,6 @@ export default function StorageManagementPage() {
       const R2files = await getR2FilesAction();
       setStatus(storageStatus);
       setFiles(R2files);
-      setSliderGB(parseFloat((storageStatus.storageUsageBytes / (1024 * 1024 * 1024)).toFixed(2)));
     } catch (e) {
       toast.error('Failed to load storage allocations.');
     } finally {
@@ -49,33 +46,7 @@ export default function StorageManagementPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSliderChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseFloat(e.target.value);
-    setSliderGB(val);
-  };
 
-  const applyStorageSimulation = async () => {
-    try {
-      setUpdating(true);
-      const bytes = sliderGB * 1024 * 1024 * 1024;
-      const newStatus = await setStorageUsageAction(bytes);
-      setStatus(newStatus);
-      toast.success(`Simulated storage updated to ${sliderGB.toFixed(2)} GB.`);
-      
-      // Trigger notification feedback depending on thresholds
-      if (sliderGB >= 9.5) {
-        toast.error('Cloudflare R2 threshold exceeded (9.5 GB limit). File uploads are now disabled.');
-      } else if (sliderGB >= 9.0) {
-        toast.warning('Critical Storage Threshold (90% limit). Alert notification dispatched.');
-      } else if (sliderGB >= 8.0) {
-        toast.info('Storage High Capacity warning dispatched (80% limit).');
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'Simulation failed.');
-    } finally {
-      setUpdating(false);
-    }
-  };
 
   // Enforce access control
   if (user?.role !== 'ADMIN') {
@@ -124,7 +95,7 @@ export default function StorageManagementPage() {
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-5">
             <div className="flex items-center gap-2 text-slate-800 font-bold text-xs uppercase tracking-wider">
               <Server className="h-4.5 w-4.5 text-slate-400" />
-              <span>Simulated allocation status</span>
+              <span>Allocation status</span>
             </div>
 
             <div className="space-y-2">
@@ -182,47 +153,7 @@ export default function StorageManagementPage() {
             </div>
           </div>
 
-          {/* Threshold Adjust Simulator */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
-            <div className="space-y-1">
-              <h3 className="font-bold text-slate-800 text-sm">R2 Threshold Simulator</h3>
-              <p className="text-[10px] text-slate-400">Use this slider to change simulated R2 disk storage live. Great for demonstrating warnings during reviews.</p>
-            </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="5.0"
-                  max="10.0"
-                  step="0.1"
-                  value={sliderGB}
-                  onChange={handleSliderChange}
-                  className="flex-1 accent-teal-700 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer"
-                />
-                <span className="font-mono font-bold text-base text-slate-800 bg-slate-50 border px-3 py-1 rounded-lg shrink-0">
-                  {sliderGB.toFixed(2)} GB
-                </span>
-              </div>
-
-              <div className="flex justify-between text-[10px] text-slate-400 font-bold border-b border-slate-50 pb-2">
-                <span>5.0 GB</span>
-                <span>8.0 GB (Info Alert)</span>
-                <span>9.0 GB (Severe Alert)</span>
-                <span>9.5 GB (Block Uploads)</span>
-                <span>10.0 GB (Max)</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={applyStorageSimulation}
-                disabled={updating}
-                className="btn-primary w-full py-2 flex items-center justify-center gap-1.5"
-              >
-                {updating ? 'Updating simulation metrics...' : 'Apply Simulated Size'}
-              </button>
-            </div>
-          </div>
 
         </div>
 
