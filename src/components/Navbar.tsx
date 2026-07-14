@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getStorageStatusAction } from '@/app/actions/storage';
-import { Menu, Bell, ShieldAlert, HardDrive, Info, AlertTriangle, AlertOctagon, LogOut } from 'lucide-react';
+import { getNavbarNotificationsAction } from '@/app/actions/dashboard';
+import { Menu, Bell, ShieldAlert, HardDrive, Info, AlertTriangle, AlertOctagon, LogOut, CheckCircle, X } from 'lucide-react';
 import { SystemSettings } from '@/lib/types';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavbarProps {
   sidebarOpen: boolean;
@@ -15,21 +18,27 @@ interface NavbarProps {
 export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: NavbarProps) {
   const { user, logout } = useAuth();
   const [storage, setStorage] = useState<SystemSettings | null>(null);
+  const [notifications, setNotifications] = useState<{ id: string; type: 'warning' | 'info' | 'danger'; message: string; link: string }[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const fetchNavbarData = async () => {
+    try {
+      const storageStatus = await getStorageStatusAction();
+      setStorage(storageStatus);
+
+      const notifs = await getNavbarNotificationsAction();
+      setNotifications(notifs);
+    } catch (err) {
+      console.error('Failed to load navbar metrics:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchStorage = async () => {
-      try {
-        const res = await getStorageStatusAction();
-        setStorage(res);
-      } catch (err) {
-        console.error('Failed to load storage status in navbar', err);
-      }
-    };
-
-    fetchStorage();
-    // Poll storage status every 10 seconds to keep usage bar in sync
-    const interval = setInterval(fetchStorage, 10000);
+    fetchNavbarData();
+    // Poll navbar alerts and storage status every 10 seconds to keep widgets in sync
+    const interval = setInterval(fetchNavbarData, 10000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!user) return null;
@@ -117,12 +126,75 @@ export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: Navba
         {/* Info indicator for screen reader */}
         <span className="sr-only">Storage limit {usageGB} GB of {maxGB} GB</span>
 
-        {/* Notifications Mock */}
+        {/* Notifications Dropdown Panel */}
         <div className="relative">
-          <button className="p-1.5 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-lg relative">
+          <button 
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="p-1.5 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-lg relative cursor-pointer"
+          >
             <Bell className="h-5 w-5" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-teal-600 rounded-full ring-2 ring-white" />
+            {notifications.length > 0 && (
+              <span className="absolute top-1 right-1 h-2.5 w-2.5 bg-red-600 rounded-full ring-2 ring-white animate-pulse" />
+            )}
           </button>
+          
+          <AnimatePresence>
+            {dropdownOpen && (
+              <>
+                {/* Backdrop handler to close on click outside */}
+                <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
+                
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-40 p-4 space-y-3 overflow-hidden"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Alert Notifications</span>
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{notifications.length} Alerts</span>
+                  </div>
+                  
+                  <div className="max-h-[300px] overflow-y-auto space-y-2.5 pr-1">
+                    {notifications.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-slate-400 space-y-1">
+                        <CheckCircle className="h-8 w-8 text-teal-600 mx-auto opacity-70 mb-1" />
+                        <p className="font-bold text-slate-600">All Systems Clear</p>
+                        <p className="text-[10px] opacity-80">No security or storage issues detected.</p>
+                      </div>
+                    ) : (
+                      notifications.map((notif) => {
+                        let NotifIcon = Info;
+                        let textClass = 'text-blue-700';
+                        let bgClass = 'bg-blue-50/50 border-blue-100';
+                        if (notif.type === 'danger') {
+                          NotifIcon = AlertOctagon;
+                          textClass = 'text-red-700';
+                          bgClass = 'bg-red-50/50 border-red-100';
+                        } else if (notif.type === 'warning') {
+                          NotifIcon = AlertTriangle;
+                          textClass = 'text-amber-700';
+                          bgClass = 'bg-amber-50/50 border-amber-100';
+                        }
+                        
+                        return (
+                          <Link 
+                            href={notif.link} 
+                            key={notif.id}
+                            onClick={() => setDropdownOpen(false)}
+                            className={`flex gap-2.5 p-2.5 border rounded-xl hover:shadow-xs transition-shadow block text-[11px] font-medium leading-normal ${bgClass} ${textClass}`}
+                          >
+                            <NotifIcon className="h-4 w-4 shrink-0 mt-0.5" />
+                            <span>{notif.message}</span>
+                          </Link>
+                        );
+                      })
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Border delimiter */}
