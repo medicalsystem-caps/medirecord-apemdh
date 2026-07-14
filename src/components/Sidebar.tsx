@@ -111,9 +111,7 @@ export default function Sidebar({ collapsed, setCollapsed, className }: SidebarP
       {/* Sidebar Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100">
         <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="p-2 bg-teal-700 text-white rounded-lg shrink-0">
-            <HeartPulse className="h-5 w-5" />
-          </div>
+          <img src="/logo.png" alt="MediRecord Logo" className="h-8 w-8 object-contain shrink-0" />
           {!collapsed && (
             <motion.span
               initial={{ opacity: 0, x: -10 }}

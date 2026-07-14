@@ -61,9 +61,7 @@ export default function ChangePasswordPage() {
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-teal-700" />
         
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-teal-50 text-teal-700 rounded-lg">
-            <HeartPulse className="h-6 w-6" />
-          </div>
+          <img src="/logo.png" alt="MediRecord Logo" className="h-10 w-10 object-contain" />
           <div>
             <span className="text-[10px] font-bold text-teal-800 tracking-wider uppercase">MediRecord security</span>
             <h2 className="text-lg font-bold text-slate-800">Mandatory Password Change</h2>

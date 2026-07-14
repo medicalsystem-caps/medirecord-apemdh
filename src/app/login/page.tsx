@@ -39,9 +39,7 @@ export default function LoginPage() {
         
         {/* Header Logo & Title */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="p-3 bg-teal-700 text-white rounded-2xl shadow-md mb-3">
-            <HeartPulse className="h-6 w-6 animate-pulse" />
-          </div>
+          <img src="/logo.png" alt="MediRecord Logo" className="h-14 w-14 object-contain mb-3" />
           <span className="text-[10px] font-bold text-teal-800 tracking-widest uppercase">APEMDH Civil Registry Portal</span>
           <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight mt-1">MediRecord</h1>
           <p className="text-slate-500 text-xs mt-1.5 max-w-xs">
