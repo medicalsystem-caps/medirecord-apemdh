@@ -66,8 +66,8 @@ export async function getDashboardStatsAction() {
 
     return {
       name: month,
-      Births: birthCount || (10 + (index * 4) + (index % 2 === 0 ? 3 : -2)), // default fallback if empty
-      Deaths: deathCount || (4 + (index * 2) + (index % 2 === 0 ? -1 : 1)),
+      Births: birthCount,
+      Deaths: deathCount,
     };
   });
 

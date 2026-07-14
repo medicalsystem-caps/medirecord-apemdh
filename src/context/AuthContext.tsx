@@ -21,9 +21,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const refreshUser = async () => {
+  const refreshUser = async (forceLoading = false) => {
     try {
-      setLoading(true);
+      if (forceLoading || !user) {
+        setLoading(true);
+      }
       const currentUser = await getCurrentUserAction();
       setUser(currentUser);
       
@@ -40,9 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    refreshUser();
+    refreshUser(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, []);
 
   const login = async (email: string, password: string): Promise<string | null> => {
     setLoading(true);
