@@ -29,7 +29,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 bg-dot-pattern selection:bg-teal-500 selection:text-white">
       {/* 1. Header Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100/80">
+      <header className="sticky top-0 z-50 bg-transparent/45 backdrop-blur-md border-b border-slate-200/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo Brand */}
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
@@ -212,8 +212,7 @@ export default function LoginPage() {
               <h4 className="text-white font-bold text-xs uppercase tracking-wider">Support Contact</h4>
               <ul className="space-y-1.5 text-[11px]">
                 <li>APEMDH IT Administration</li>
-                <li>Email: support@apemdh.gov.ph</li>
-                <li>Tel: (078) 323-8022</li>
+                <li>Email: medicalsystem976@gmail.com</li>
               </ul>
             </div>
           </div>
@@ -221,7 +220,7 @@ export default function LoginPage() {
           {/* Bottom Bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px]">
             <span>
-              &copy; {new Date().getFullYear()} APEMDH MediRecord. Academic Capstone Project. All Rights Reserved.
+              &copy; {new Date().getFullYear()} APEMDH MediRecord. All Rights Reserved.
             </span>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
