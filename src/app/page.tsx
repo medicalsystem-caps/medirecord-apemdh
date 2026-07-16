@@ -11,7 +11,9 @@ import {
   ArrowRight,
   Layers,
   FileCheck,
-  Building
+  Building,
+  ShieldAlert,
+  Archive
 } from 'lucide-react';
 
 export default async function Home() {
@@ -208,7 +210,7 @@ export default async function Home() {
             {[
               {
                 title: "1. Registry Data Entry",
-                desc: "Medical Records Officers (MRO) encode certificate details and upload scanned supporting papers to Cloudflare R2.",
+                desc: "Medical Records Officers (MRO) encode certificate details and upload scanned supporting papers to Supabase Storage.",
                 icon: FileText,
                 color: "text-blue-600 bg-blue-50 border-blue-100/50"
               },
@@ -219,50 +221,48 @@ export default async function Home() {
                 color: "text-amber-600 bg-amber-50 border-amber-100/50"
               },
               {
-                title: "3. Civil Registrar Approval",
-                desc: "The Civil Registrar Officer (CRO) conducts checks to review details before releasing certificates to municipal structures.",
-                icon: Layers,
-                color: "text-indigo-600 bg-indigo-50 border-indigo-100/50"
+                title: "3. Civil Verification",
+                desc: "Medical Records Officers verify certification Cause-of-Death criteria & ICD-10 medical coding formats.",
+                icon: ShieldAlert,
+                color: "text-teal-600 bg-teal-50 border-teal-100/50"
               },
               {
-                title: "4. Archiving & Logging",
-                desc: "The Local Civil Registrar (LCR) records submissions and locks entries to archive files permanently. Logs are untamperable.",
-                icon: HardDrive,
-                color: "text-teal-600 bg-teal-50 border-teal-100/50"
+                title: "4. Archival Locking",
+                desc: "Local Civil Registrars review, assign registry book numbers, and lock documents permanently in archives.",
+                icon: Archive,
+                color: "text-purple-600 bg-purple-50 border-purple-100/50"
               }
-            ].map((card, idx) => {
-              const Icon = card.icon;
-              return (
-                <div
-                  key={idx}
-                  className={`bg-white border ${card.color} p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-4`}
-                >
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-xl shrink-0 inline-block bg-white shadow-xs">
-                      <Icon className="h-5 w-5" />
+            ].map((step, idx) => (
+              <div
+                key={idx}
+                className="p-5 rounded-3xl border border-slate-100 bg-white hover:shadow-lg transition-all duration-300 flex flex-col justify-between min-h-[160px] relative overflow-hidden"
+              >
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">APEMDH Flow</span>
+                    <div className={`p-2 border rounded-2xl ${step.color}`}>
+                      <step.icon className="h-5 w-5" />
                     </div>
-                    <h3 className="font-extrabold text-slate-800 text-xs">{card.title}</h3>
-                    <p className="text-slate-500 text-[11px] leading-relaxed">{card.desc}</p>
                   </div>
+                  <h3 className="text-sm font-bold text-slate-800 tracking-tight">{step.title}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-medium">{step.desc}</p>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* 5. Security & Framework Section */}
-      <section id="security" className="py-16 bg-gradient-to-br from-teal-900 via-teal-800 to-slate-900 text-white relative overflow-hidden">
-        {/* Background mesh */}
-        <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-teal-700/20 rounded-full" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="max-w-3xl space-y-6">
+      <section id="security" className="py-20 bg-gradient-to-br from-teal-900 via-teal-950 to-slate-950 text-white relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 relative z-10 space-y-6">
+          <div className="space-y-4 max-w-2xl">
             <span className="inline-flex items-center gap-1 bg-teal-800/80 border border-teal-700 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">
               Technical Safety Protocol
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Protected by Modern Cloud Standards</h2>
             <p className="text-teal-100/80 text-xs sm:text-sm leading-relaxed">
-              MediRecord protects sensitive medical data by utilizing a decoupled server architecture. All file uploads are sent to private Cloudflare R2 buckets, database updates are regulated by Supabase Row-Level Security policies, and sessions are encrypted using base64 HTTP cookies with strict server-side route guards.
+              MediRecord protects sensitive medical data by utilizing a decoupled server architecture. All file uploads are sent to private Supabase Storage buckets, database updates are regulated by Supabase Row-Level Security policies, and sessions are encrypted using base64 HTTP cookies with strict server-side route guards.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-4">
               <div className="space-y-1">

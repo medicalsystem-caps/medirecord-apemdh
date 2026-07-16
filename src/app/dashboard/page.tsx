@@ -228,10 +228,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Cloudflare R2 Storage Stats */}
+        {/* Supabase Storage Stats */}
         <div className="lg:col-span-4 bg-white border border-slate-200 p-5 rounded-2xl shadow-xs flex flex-col justify-between space-y-4">
           <div>
-            <h3 className="font-bold text-slate-800 text-sm">Cloudflare R2 Storage</h3>
+            <h3 className="font-bold text-slate-800 text-sm">Supabase Cloud Storage</h3>
             <p className="text-[10px] text-slate-400">Total hospital supporting attachment allocation</p>
           </div>
 
@@ -277,7 +277,7 @@ export default function DashboardPage() {
             ) : storagePercentage >= 90 ? (
               <div className="p-2.5 bg-amber-50 border border-amber-100 rounded-lg text-[10px] text-amber-800 font-semibold flex gap-1.5 items-start">
                 <AlertTriangle className="h-4.5 w-4.5 text-amber-600 shrink-0" />
-                <span>R2 threshold critical (&gt;90%). Please archive or download older files.</span>
+                <span>Storage threshold critical (&gt;90%). Please archive or download older files.</span>
               </div>
             ) : null}
           </div>

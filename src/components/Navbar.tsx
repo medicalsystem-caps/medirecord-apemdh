@@ -101,12 +101,12 @@ export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: Navba
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Cloudflare R2 Storage Monitor bar */}
+        {/* Cloud Storage Monitor bar */}
         <div className="hidden lg:flex flex-col w-56 space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-500 flex items-center gap-1.5">
               <HardDrive className="h-3.5 w-3.5 text-slate-400" />
-              R2 Cloud Storage
+              Cloud Storage
             </span>
             <span className="font-bold text-slate-700">{usagePercentage.toFixed(1)}% ({usageGB} GB)</span>
           </div>
