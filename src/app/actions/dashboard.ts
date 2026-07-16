@@ -103,21 +103,21 @@ export async function getNavbarNotificationsAction() {
     notifications.push({
       id: 'notif_storage_limit',
       type: 'danger',
-      message: `Uploads disabled: Cloud R2 storage is full (${percentage.toFixed(1)}%).`,
+      message: `Uploads disabled: Supabase cloud storage is full (${percentage.toFixed(1)}%).`,
       link: '/dashboard/storage',
     });
   } else if (percentage >= 90) {
     notifications.push({
       id: 'notif_storage_severe',
       type: 'warning',
-      message: `Severe warning: Cloud R2 storage is at ${percentage.toFixed(1)}%.`,
+      message: `Severe warning: Supabase cloud storage is at ${percentage.toFixed(1)}%.`,
       link: '/dashboard/storage',
     });
   } else if (percentage >= 80) {
     notifications.push({
       id: 'notif_storage_high',
       type: 'info',
-      message: `Warning: Cloud R2 storage is at ${percentage.toFixed(1)}%.`,
+      message: `Warning: Supabase cloud storage is at ${percentage.toFixed(1)}%.`,
       link: '/dashboard/storage',
     });
   }
@@ -131,7 +131,7 @@ export async function getNavbarNotificationsAction() {
       id: `notif_dup_birth_${b.id}`,
       type: 'danger',
       message: `Potential duplicate birth record: ${b.childName} (Cert #${b.certificateNumber})`,
-      link: '/dashboard/birth',
+      link: `/dashboard/birth?search=${encodeURIComponent(b.certificateNumber)}`,
     });
   });
 
@@ -140,7 +140,7 @@ export async function getNavbarNotificationsAction() {
       id: `notif_dup_death_${d.id}`,
       type: 'danger',
       message: `Potential duplicate death record: ${d.deceasedName} (Cert #${d.certificateNumber})`,
-      link: '/dashboard/death',
+      link: `/dashboard/death?search=${encodeURIComponent(d.certificateNumber)}`,
     });
   });
 
@@ -148,37 +148,81 @@ export async function getNavbarNotificationsAction() {
   if (currentUser.role === 'PHYSICIAN') {
     const pendingCertBirths = db.birth_records.filter(r => r.status === 'PENDING_CERTIFICATION').length;
     const pendingCertDeaths = db.death_records.filter(r => r.status === 'PENDING_CERTIFICATION').length;
-    const totalPending = pendingCertBirths + pendingCertDeaths;
-    if (totalPending > 0) {
+    
+    if (pendingCertBirths > 0) {
       notifications.push({
-        id: 'notif_physician_pending',
+        id: 'notif_phys_birth',
         type: 'info',
-        message: `You have ${totalPending} records awaiting medical certification.`,
-        link: '/dashboard',
+        message: `You have ${pendingCertBirths} birth records awaiting medical certification.`,
+        link: '/dashboard/birth?status=PENDING_CERTIFICATION',
+      });
+    }
+    if (pendingCertDeaths > 0) {
+      notifications.push({
+        id: 'notif_phys_death',
+        type: 'info',
+        message: `You have ${pendingCertDeaths} death records awaiting medical certification.`,
+        link: '/dashboard/death?status=PENDING_CERTIFICATION',
       });
     }
   } else if (currentUser.role === 'MRO') {
     const pendingVerifyBirths = db.birth_records.filter(r => r.status === 'PENDING_VERIFICATION').length;
     const pendingVerifyDeaths = db.death_records.filter(r => r.status === 'PENDING_VERIFICATION').length;
-    const totalPending = pendingVerifyBirths + pendingVerifyDeaths;
-    if (totalPending > 0) {
+
+    if (pendingVerifyBirths > 0) {
       notifications.push({
-        id: 'notif_mro_pending',
+        id: 'notif_mro_birth',
         type: 'info',
-        message: `You have ${totalPending} records awaiting document verification.`,
-        link: '/dashboard',
+        message: `You have ${pendingVerifyBirths} birth records awaiting document verification.`,
+        link: '/dashboard/birth?status=PENDING_VERIFICATION',
+      });
+    }
+    if (pendingVerifyDeaths > 0) {
+      notifications.push({
+        id: 'notif_mro_death',
+        type: 'info',
+        message: `You have ${pendingVerifyDeaths} death records awaiting document verification.`,
+        link: '/dashboard/death?status=PENDING_VERIFICATION',
       });
     }
   } else if (currentUser.role === 'CRO') {
     const pendingApproveBirths = db.birth_records.filter(r => r.status === 'PENDING_APPROVAL').length;
     const pendingApproveDeaths = db.death_records.filter(r => r.status === 'PENDING_APPROVAL').length;
-    const totalPending = pendingApproveBirths + pendingApproveDeaths;
-    if (totalPending > 0) {
+
+    if (pendingApproveBirths > 0) {
       notifications.push({
-        id: 'notif_cro_pending',
+        id: 'notif_cro_birth',
         type: 'info',
-        message: `You have ${totalPending} records awaiting registry approval.`,
-        link: '/dashboard',
+        message: `You have ${pendingApproveBirths} birth records awaiting registry approval.`,
+        link: '/dashboard/birth?status=PENDING_APPROVAL',
+      });
+    }
+    if (pendingApproveDeaths > 0) {
+      notifications.push({
+        id: 'notif_cro_death',
+        type: 'info',
+        message: `You have ${pendingApproveDeaths} death records awaiting registry approval.`,
+        link: '/dashboard/death?status=PENDING_APPROVAL',
+      });
+    }
+  } else if (currentUser.role === 'LCR') {
+    const pendingLCRBirths = db.birth_records.filter(r => r.status === 'SUBMITTED_LCR').length;
+    const pendingLCRDeaths = db.death_records.filter(r => r.status === 'SUBMITTED_LCR').length;
+
+    if (pendingLCRBirths > 0) {
+      notifications.push({
+        id: 'notif_lcr_birth',
+        type: 'info',
+        message: `You have ${pendingLCRBirths} birth records awaiting final LCR submission.`,
+        link: '/dashboard/birth?status=SUBMITTED_LCR',
+      });
+    }
+    if (pendingLCRDeaths > 0) {
+      notifications.push({
+        id: 'notif_lcr_death',
+        type: 'info',
+        message: `You have ${pendingLCRDeaths} death records awaiting final LCR submission.`,
+        link: '/dashboard/death?status=SUBMITTED_LCR',
       });
     }
   }

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
   getBirthRecordsAction,
@@ -61,6 +62,15 @@ export default function BirthRegistryPage() {
       setLoading(false);
     }
   };
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const s = searchParams.get('search') || '';
+    const st = searchParams.get('status') || 'ALL';
+    setSearch(s);
+    setStatusFilter(st);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchRecords();
