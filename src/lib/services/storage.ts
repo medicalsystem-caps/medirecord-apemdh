@@ -1,30 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { getDb, saveDb, supabase } from './db';
 import { SystemSettings } from '../types';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
-
-// Cloudflare R2 credentials
-const r2AccessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || '';
-const r2SecretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY || '';
-const r2Endpoint = process.env.CLOUDFLARE_R2_ENDPOINT || '';
-const r2BucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME || '';
-const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || '';
-
-// Initialize S3Client pointing to Cloudflare R2 endpoint
-const s3Client = r2AccessKeyId && r2SecretAccessKey && r2Endpoint
-  ? new S3Client({
-      region: 'auto',
-      endpoint: r2Endpoint,
-      credentials: {
-        accessKeyId: r2AccessKeyId,
-        secretAccessKey: r2SecretAccessKey,
-      },
-    })
-  : null;
 
 // Helper to ensure uploads folder exists for local file fallback
 function ensureUploadsDirectory() {
@@ -33,37 +13,24 @@ function ensureUploadsDirectory() {
   }
 }
 
-// Dynamically calculate actual storage usage in bytes (R2 cloud or local filesystem)
+// Dynamically calculate actual storage usage in bytes from Supabase storage or local fallback
 export async function calculateActualStorageUsage(): Promise<number> {
-  // --- CASE A: CLOUDFLARE R2 ---
-  if (s3Client && r2BucketName) {
+  // Try Supabase Storage first
+  if (supabase) {
     try {
-      let totalSize = 0;
-      let isTruncated = true;
-      let continuationToken: string | undefined = undefined;
+      const { data, error } = await supabase.storage.from('documents').list('', {
+        limit: 1000,
+      });
 
-      while (isTruncated) {
-        const response: any = await s3Client.send(new ListObjectsV2Command({
-          Bucket: r2BucketName,
-          ContinuationToken: continuationToken,
-        }));
-
-        if (response.Contents) {
-          for (const item of response.Contents) {
-            totalSize += item.Size || 0;
-          }
-        }
-
-        isTruncated = !!response.IsTruncated;
-        continuationToken = response.NextContinuationToken;
+      if (data && !error) {
+        return data.reduce((acc, file) => acc + (file.metadata?.size || 0), 0);
       }
-      return totalSize;
     } catch (err) {
-      console.error('Failed to list objects in Cloudflare R2 bucket:', err);
+      console.error('Failed to calculate Supabase storage size:', err);
     }
   }
 
-  // --- CASE B: LOCAL FS FALLBACK ---
+  // Local FS fallback
   try {
     ensureUploadsDirectory();
     const files = fs.readdirSync(UPLOADS_DIR);
@@ -82,35 +49,33 @@ export async function calculateActualStorageUsage(): Promise<number> {
   }
 }
 
-// Fetch the list of actual files (R2 cloud or local filesystem)
+// Fetch the list of actual files from Supabase storage or local fallback
 export async function getStorageFiles(): Promise<{ name: string; size: number; mimeType: string; uploadedAt: string; url: string }[]> {
-  // --- CASE A: CLOUDFLARE R2 ---
-  if (s3Client && r2BucketName) {
+  const supabaseClient = supabase;
+  if (supabaseClient) {
     try {
-      const response = await s3Client.send(new ListObjectsV2Command({
-        Bucket: r2BucketName,
-      }));
-
-      if (!response.Contents) return [];
-
-      const cleanedPublicUrl = r2PublicUrl.endsWith('/') ? r2PublicUrl.slice(0, -1) : r2PublicUrl;
-
-      return response.Contents.map((item) => {
-        const key = item.Key || 'unknown_file';
-        return {
-          name: key,
-          size: item.Size || 0,
-          mimeType: key.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
-          uploadedAt: item.LastModified ? item.LastModified.toISOString() : new Date().toISOString(),
-          url: `${cleanedPublicUrl}/${key}`,
-        };
+      const { data, error } = await supabaseClient.storage.from('documents').list('', {
+        limit: 1000,
       });
+
+      if (data && !error) {
+        return data.map((item) => {
+          const { data: urlData } = supabaseClient.storage.from('documents').getPublicUrl(item.name);
+          return {
+            name: item.name,
+            size: item.metadata?.size || 0,
+            mimeType: item.metadata?.mimetype || (item.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+            uploadedAt: item.created_at || new Date().toISOString(),
+            url: urlData?.publicUrl || '',
+          };
+        });
+      }
     } catch (err) {
-      console.error('Failed to list R2 files:', err);
+      console.error('Failed to list Supabase files:', err);
     }
   }
 
-  // --- CASE B: LOCAL FS FALLBACK ---
+  // Local FS fallback
   try {
     ensureUploadsDirectory();
     const files = fs.readdirSync(UPLOADS_DIR);
@@ -166,7 +131,7 @@ export async function uploadFile(
   
   // Block if storage has reached limits
   if (actualUsage >= LIMIT_9_5_GB || actualUsage + fileBytes >= LIMIT_9_5_GB) {
-    throw new Error('Upload disabled: Cloudflare R2 storage has reached its 9.5 GB limit.');
+    throw new Error('Upload disabled: Supabase storage has reached its 9.5 GB limit.');
   }
 
   // File validation
@@ -188,32 +153,7 @@ export async function uploadFile(
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  // --- CASE A: CLOUDFLARE R2 LIVE CLOUD UPLOAD ---
-  if (s3Client && r2BucketName && r2PublicUrl) {
-    try {
-      await s3Client.send(new PutObjectCommand({
-        Bucket: r2BucketName,
-        Key: cleanName,
-        Body: buffer,
-        ContentType: file.type,
-      }));
-
-      const cleanedPublicUrl = r2PublicUrl.endsWith('/') ? r2PublicUrl.slice(0, -1) : r2PublicUrl;
-
-      // Update storage status cache
-      await getStorageStatus();
-
-      return {
-        filename: file.name,
-        url: `${cleanedPublicUrl}/${cleanName}`,
-        size: fileBytes,
-      };
-    } catch (err) {
-      console.error('Cloudflare R2 upload failed, falling back to other storage options:', err);
-    }
-  }
-
-  // --- CASE B: SUPABASE STORAGE CLOUD UPLOAD FALLBACK (For Vercel persistence if R2 fails or is unset) ---
+  // --- CASE A: SUPABASE CLOUD UPLOAD ---
   if (supabase) {
     try {
       const { data, error } = await supabase.storage.from('documents').upload(cleanName, buffer, {
@@ -238,11 +178,11 @@ export async function uploadFile(
         console.error('Supabase storage upload error:', error);
       }
     } catch (err) {
-      console.error('Supabase storage upload fallback failed:', err);
+      console.error('Supabase storage upload failed:', err);
     }
   }
 
-  // --- CASE C: LOCAL FS FALLBACK ---
+  // --- CASE B: LOCAL FS FALLBACK ---
   ensureUploadsDirectory();
   const filePath = path.join(UPLOADS_DIR, cleanName);
   fs.writeFileSync(filePath, buffer);
@@ -258,22 +198,9 @@ export async function uploadFile(
 }
 
 export async function deleteFile(cleanName: string, sizeBytes: number): Promise<void> {
-  // Extract file key if the full URL is passed
   const fileKey = cleanName.includes('/') ? cleanName.split('/').pop() || cleanName : cleanName;
 
-  // --- CASE A: CLOUDFLARE R2 LIVE DELETION ---
-  if (s3Client && r2BucketName) {
-    try {
-      await s3Client.send(new DeleteObjectCommand({
-        Bucket: r2BucketName,
-        Key: fileKey,
-      }));
-    } catch (err) {
-      console.error(`Failed to delete object from Cloudflare R2 bucket: ${fileKey}`, err);
-    }
-  }
-
-  // --- CASE B: SUPABASE STORAGE CLOUD FALLBACK DELETION ---
+  // --- CASE A: SUPABASE DELETION ---
   if (supabase) {
     try {
       await supabase.storage.from('documents').remove([fileKey]);
@@ -282,7 +209,7 @@ export async function deleteFile(cleanName: string, sizeBytes: number): Promise<
     }
   }
 
-  // --- CASE C: LOCAL FS FALLBACK DELETION ---
+  // --- CASE B: LOCAL FS FALLBACK DELETION ---
   const filePath = path.join(UPLOADS_DIR, fileKey);
   if (fs.existsSync(filePath)) {
     try {
