@@ -48,7 +48,6 @@ export default function BirthRegistryPage() {
   // File upload state for MRO verification
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [newDocName, setNewDocName] = useState('');
-  const [previewFile, setPreviewFile] = useState<{ name: string; url: string } | null>(null);
 
   const fetchRecords = async () => {
     try {
@@ -431,26 +430,17 @@ export default function BirthRegistryPage() {
                         const downloadUrl = isCombined ? doc.split('|')[1] : (doc.startsWith('http') || doc.startsWith('/') ? doc : `/uploads/${doc}`);
                         return (
                           <div key={idx} className="flex items-center justify-between p-2 border border-slate-100 bg-slate-50/50 rounded-lg text-xs font-semibold">
-                            <span className="text-slate-600 truncate max-w-[150px] sm:max-w-[200px]">{displayName}</span>
-                            <div className="flex items-center gap-3">
-                              <button
-                                onClick={() => setPreviewFile({ name: displayName, url: downloadUrl })}
-                                className="text-blue-700 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
-                              >
-                                <Eye className="h-3.5 w-3.5" />
-                                <span>Preview</span>
-                              </button>
-                              <a
-                                href={downloadUrl}
-                                download={displayName}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-teal-700 hover:text-teal-800 flex items-center gap-1 cursor-pointer"
-                              >
-                                <Download className="h-3.5 w-3.5" />
-                                <span>Download</span>
-                              </a>
-                            </div>
+                            <span className="text-slate-600 truncate max-w-[200px]">{displayName}</span>
+                            <a
+                              href={downloadUrl}
+                              download={displayName}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-teal-700 hover:text-teal-800 flex items-center gap-1 cursor-pointer"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              <span>Download</span>
+                            </a>
                           </div>
                         );
                       })}
@@ -650,63 +640,6 @@ export default function BirthRegistryPage() {
           </>
         )}
       </AnimatePresence>
-
-      {/* Document Preview Modal */}
-      {previewFile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-fade-up">
-            {/* Modal Header */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <div>
-                <span className="text-[10px] text-teal-700 font-bold uppercase tracking-wider block">Document Viewer</span>
-                <h3 className="text-sm font-bold text-slate-800 truncate max-w-[500px]" title={previewFile.name}>{previewFile.name}</h3>
-              </div>
-              <button
-                onClick={() => setPreviewFile(null)}
-                className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="flex-1 p-6 overflow-y-auto bg-slate-100/50 flex items-center justify-center min-h-[400px]">
-              {/\.(jpg|jpeg|png|gif|webp)$/i.test(previewFile.url) || /\.(jpg|jpeg|png|gif|webp)$/i.test(previewFile.name) ? (
-                <img
-                  src={previewFile.url}
-                  alt={previewFile.name}
-                  className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-xs"
-                />
-              ) : (
-                <iframe
-                  src={`${previewFile.url}#toolbar=0`}
-                  className="w-full h-[65vh] border-0 rounded-xl shadow-xs bg-white"
-                  title={previewFile.name}
-                />
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50">
-              <button
-                onClick={() => setPreviewFile(null)}
-                className="btn-secondary text-xs !py-1.5 px-4"
-              >
-                Close
-              </button>
-              <a
-                href={previewFile.url}
-                download={previewFile.name}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary text-xs !py-1.5 px-4"
-              >
-                Download File
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
