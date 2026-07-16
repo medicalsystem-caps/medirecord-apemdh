@@ -88,10 +88,7 @@ export default function DashboardPage() {
     );
   }
 
-  const { stats, monthlyData, recentActivities, storage } = data;
-  const storageGB = (storage.storageUsageBytes / (1024 * 1024 * 1024)).toFixed(2);
-  const storageMaxGB = (storage.maxStorageBytes / (1024 * 1024 * 1024)).toFixed(2);
-  const storagePercentage = (storage.storageUsageBytes / storage.maxStorageBytes) * 100;
+  const { stats, monthlyData, recentActivities } = data;
 
   const cardVariants = {
     hidden: { opacity: 0, y: 15 },
@@ -182,11 +179,11 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Charts & Storage Row */}
+      {/* Charts Row */}
       <div className="grid lg:grid-cols-12 gap-6">
         
         {/* Registration Counts chart */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 p-5 rounded-2xl shadow-xs space-y-4">
+        <div className="lg:col-span-12 bg-white border border-slate-200 p-5 rounded-2xl shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-slate-800 text-sm">Monthly Registrations</h3>
@@ -225,61 +222,6 @@ export default function DashboardPage() {
                 <Area type="monotone" dataKey="Deaths" stroke="#f43f5e" strokeWidth={2.5} fillOpacity={1} fill="url(#colorDeath)" />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Supabase Storage Stats */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 p-5 rounded-2xl shadow-xs flex flex-col justify-between space-y-4">
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm">Supabase Cloud Storage</h3>
-            <p className="text-[10px] text-slate-400">Total hospital supporting attachment allocation</p>
-          </div>
-
-          {/* Circle Gauge */}
-          <div className="flex justify-center py-2 relative">
-            <svg className="w-32 h-32 transform -rotate-90">
-              <circle cx="64" cy="64" r="54" className="stroke-slate-100" strokeWidth="8" fill="transparent" />
-              <circle cx="64" cy="64" r="54" 
-                className={`transition-all duration-500 ease-out ${
-                  storagePercentage >= 95 ? 'stroke-red-600' :
-                  storagePercentage >= 90 ? 'stroke-amber-500' :
-                  storagePercentage >= 80 ? 'stroke-blue-500' : 'stroke-teal-600'
-                }`}
-                strokeWidth="10" 
-                fill="transparent" 
-                strokeDasharray={2 * Math.PI * 54}
-                strokeDashoffset={2 * Math.PI * 54 * (1 - Math.min(100, storagePercentage) / 100)}
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-black text-slate-800">{storagePercentage.toFixed(1)}%</span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{storageGB} GB Used</span>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-3">
-              <span className="text-slate-500 font-medium">Free Capacity:</span>
-              <span className="font-bold text-slate-800">{(storage.maxStorageBytes / (1024 * 1024 * 1024) - parseFloat(storageGB)).toFixed(2)} GB</span>
-            </div>
-            
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">Total Provision:</span>
-              <span className="font-bold text-slate-800">{storageMaxGB} GB</span>
-            </div>
-
-            {storagePercentage >= 95 ? (
-              <div className="p-2.5 bg-red-50 border border-red-100 rounded-lg text-[10px] text-red-800 font-semibold flex gap-1.5 items-start">
-                <AlertTriangle className="h-4.5 w-4.5 text-red-600 shrink-0" />
-                <span>Uploads are disabled automatically as storage has reached the 9.5 GB safety limit.</span>
-              </div>
-            ) : storagePercentage >= 90 ? (
-              <div className="p-2.5 bg-amber-50 border border-amber-100 rounded-lg text-[10px] text-amber-800 font-semibold flex gap-1.5 items-start">
-                <AlertTriangle className="h-4.5 w-4.5 text-amber-600 shrink-0" />
-                <span>Storage threshold critical (&gt;90%). Please archive or download older files.</span>
-              </div>
-            ) : null}
           </div>
         </div>
 

@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { getStorageStatusAction } from '@/app/actions/storage';
 import { getNavbarNotificationsAction } from '@/app/actions/dashboard';
-import { Menu, Bell, ShieldAlert, HardDrive, Info, AlertTriangle, AlertOctagon, LogOut, CheckCircle, X } from 'lucide-react';
+import { Menu, Bell, ShieldAlert, LogOut, CheckCircle, X, Info, AlertTriangle, AlertOctagon } from 'lucide-react';
 import { SystemSettings } from '@/lib/types';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,16 +16,12 @@ interface NavbarProps {
 
 export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: NavbarProps) {
   const { user, logout } = useAuth();
-  const [storage, setStorage] = useState<SystemSettings | null>(null);
   const [notifications, setNotifications] = useState<{ id: string; type: 'warning' | 'info' | 'danger'; message: string; link: string }[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const fetchNavbarData = async () => {
     try {
-      const storageStatus = await getStorageStatusAction();
-      setStorage(storageStatus);
-
       const notifs = await getNavbarNotificationsAction();
       setNotifications(notifs);
     } catch (err) {
@@ -43,40 +38,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: Navba
   }, []);
 
   if (!user) return null;
-
-  const usageBytes = storage?.storageUsageBytes || 0;
-  const maxBytes = storage?.maxStorageBytes || (10 * 1024 * 1024 * 1024);
-  const usagePercentage = (usageBytes / maxBytes) * 100;
-  const usageGB = (usageBytes / (1024 * 1024 * 1024)).toFixed(2);
-  const maxGB = (maxBytes / (1024 * 1024 * 1024)).toFixed(2);
-
-  // Status flags
-  const is80Percent = usagePercentage >= 80;
-  const is90Percent = usagePercentage >= 90;
-  const is95Percent = usagePercentage >= 95; // 9.5 GB limit
-
-  // Color mapping based on usage
-  let barColor = 'bg-teal-600';
-  let badgeColor = 'bg-teal-50 text-teal-800 border-teal-200';
-  let storageIcon = <Info className="h-3 w-3 text-teal-600" />;
-  let storageLabel = 'R2 Normal';
-
-  if (is95Percent) {
-    barColor = 'bg-red-600 animate-pulse';
-    badgeColor = 'bg-red-50 text-red-800 border-red-200 animate-pulse';
-    storageIcon = <AlertOctagon className="h-3.5 w-3.5 text-red-600" />;
-    storageLabel = 'Uploads Disabled (95%+)';
-  } else if (is90Percent) {
-    barColor = 'bg-amber-500 animate-pulse';
-    badgeColor = 'bg-amber-50 text-amber-800 border-amber-200';
-    storageIcon = <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />;
-    storageLabel = 'R2 Severe Warning (90%+)';
-  } else if (is80Percent) {
-    barColor = 'bg-blue-500';
-    badgeColor = 'bg-blue-50 text-blue-800 border-blue-200';
-    storageIcon = <Info className="h-3.5 w-3.5 text-blue-600" />;
-    storageLabel = 'R2 High Usage (80%+)';
-  }
 
   return (
     <header className={`h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 fixed top-0 right-0 left-0 z-20 transition-all duration-300 ${
@@ -101,31 +62,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen, collapsed }: Navba
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Cloud Storage Monitor bar */}
-        <div className="hidden lg:flex flex-col w-56 space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-500 flex items-center gap-1.5">
-              <HardDrive className="h-3.5 w-3.5 text-slate-400" />
-              Cloud Storage
-            </span>
-            <span className="font-bold text-slate-700">{usagePercentage.toFixed(1)}% ({usageGB} GB)</span>
-          </div>
-          
-          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-            <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${Math.min(100, usagePercentage)}%` }} />
-          </div>
-        </div>
-
-        {/* Warning Indicator Badge */}
-        {(is80Percent || is90Percent || is95Percent) && (
-          <div className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold border rounded-lg ${badgeColor}`}>
-            {storageIcon}
-            <span>{storageLabel}</span>
-          </div>
-        )}
-
-        {/* Info indicator for screen reader */}
-        <span className="sr-only">Storage limit {usageGB} GB of {maxGB} GB</span>
 
         {/* Notifications Dropdown Panel */}
         <div className="relative">
