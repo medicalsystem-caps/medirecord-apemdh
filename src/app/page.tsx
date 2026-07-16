@@ -146,8 +146,8 @@ export default async function Home() {
                     <span className="text-xs font-bold text-teal-700 mt-1 block">RA 10173 Protected</span>
                   </div>
                   <div className="p-3 bg-white border border-slate-100 rounded-2xl">
-                    <span className="text-[10px] text-slate-400 font-semibold block uppercase">Storage Limit</span>
-                    <span className="text-xs font-bold text-teal-700 mt-1 block">10 GB Secure R2</span>
+                    <span className="text-[10px] text-slate-400 font-semibold block uppercase">Cloud Storage</span>
+                    <span className="text-xs font-bold text-teal-700 mt-1 block">Private Cloud Vault</span>
                   </div>
                 </div>
               </div>
