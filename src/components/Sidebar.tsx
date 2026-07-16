@@ -82,7 +82,7 @@ export default function Sidebar({ collapsed, setCollapsed, className }: SidebarP
       roles: ['ADMIN'],
     },
     {
-      title: 'Storage Monitor',
+      title: 'Files',
       href: '/dashboard/storage',
       icon: HardDrive,
       roles: ['ADMIN'],
