@@ -34,6 +34,7 @@ import {
   Stethoscope,
   Archive,
   UploadCloud,
+  Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -131,8 +132,10 @@ export default function DeathRegistryPage() {
     const file = e.target.files?.[0];
     if (!file || !selectedRecord) return;
 
-    if (file.size > 4 * 1024 * 1024) {
-      toast.error('File size exceeds the 4MB Vercel upload limit.');
+    // Client-side limit: 4.5 MB
+    const MAX_SIZE = 4.5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast.error(`File size (${(file.size / (1024 * 1024)).toFixed(2)} MB) exceeds the maximum allowed limit of 4.50 MB.`);
       return;
     }
 
@@ -141,12 +144,16 @@ export default function DeathRegistryPage() {
 
     try {
       setUploadingDoc(true);
-      const updated = await uploadDeathFileAction(selectedRecord.id, formData);
-      setSelectedRecord(updated);
-      toast.success('Supporting document uploaded successfully to secure repository.');
-      fetchRecords();
+      const res = await uploadDeathFileAction(selectedRecord.id, formData);
+      if (res.success && res.record) {
+        setSelectedRecord(res.record);
+        toast.success('Supporting document uploaded successfully to secure repository.');
+        fetchRecords();
+      } else {
+        toast.error(res.error || 'File upload failed.');
+      }
     } catch (err: any) {
-      toast.error(err.message || 'File upload failed.');
+      toast.error(err.message || 'An error occurred during file upload.');
     } finally {
       setUploadingDoc(false);
     }
@@ -483,18 +490,26 @@ export default function DeathRegistryPage() {
                     <span className="text-xs text-slate-400 italic block">No files uploaded.</span>
                   ) : (
                     <div className="space-y-1.5">
-                      {selectedRecord.supportingDocuments.map((doc, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-2 border border-slate-100 bg-slate-50/50 rounded-lg text-xs font-semibold">
-                          <span className="text-slate-600 truncate max-w-[200px]">{doc}</span>
-                          <button
-                            onClick={() => toast.success(`Simulating secure download for: ${doc}`)}
-                            className="text-teal-700 hover:text-teal-800 flex items-center gap-1 cursor-pointer"
-                          >
-                            <Download className="h-3.5 w-3.5" />
-                            <span>Download</span>
-                          </button>
-                        </div>
-                      ))}
+                      {selectedRecord.supportingDocuments.map((doc, idx) => {
+                        const isCombined = doc.includes('|');
+                        const displayName = isCombined ? doc.split('|')[0] : doc;
+                        const downloadUrl = isCombined ? doc.split('|')[1] : (doc.startsWith('http') || doc.startsWith('/') ? doc : `/uploads/${doc}`);
+                        return (
+                          <div key={idx} className="flex items-center justify-between p-2 border border-slate-100 bg-slate-50/50 rounded-lg text-xs font-semibold">
+                            <span className="text-slate-600 truncate max-w-[200px]">{displayName}</span>
+                            <a
+                              href={downloadUrl}
+                              download={displayName}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-teal-700 hover:text-teal-800 flex items-center gap-1 cursor-pointer"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              <span>Download</span>
+                            </a>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -666,11 +681,15 @@ export default function DeathRegistryPage() {
                           disabled={uploadingDoc}
                           accept=".pdf,.png,.jpg,.jpeg"
                         />
-                        <UploadCloud className="h-7 w-7 text-slate-400" />
+                        {uploadingDoc ? (
+                          <Loader2 className="h-7 w-7 text-teal-600 animate-spin" />
+                        ) : (
+                          <UploadCloud className="h-7 w-7 text-slate-400" />
+                        )}
                         <span className="text-xs text-slate-600 font-bold">
-                          {uploadingDoc ? 'Uploading to secure repository...' : 'Select File (PDF, PNG, JPG)'}
+                          {uploadingDoc ? 'Uploading supporting document...' : 'Select File (PDF, PNG, JPG)'}
                         </span>
-                        <span className="text-[10px] text-slate-400">Up to 4MB file allocation</span>
+                        <span className="text-[10px] text-slate-400">Up to 4.5MB file allocation</span>
                       </label>
                     </div>
 

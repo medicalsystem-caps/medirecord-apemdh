@@ -320,31 +320,37 @@ export async function finalizeLCRDeathAction(id: string): Promise<DeathRecord> {
 export async function uploadDeathFileAction(
   id: string,
   formData: FormData
-): Promise<DeathRecord> {
-  const user = await getCurrentUser();
-  if (!user) throw new Error('Unauthorized');
+): Promise<{ success: boolean; error?: string; record?: DeathRecord }> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
 
-  const file = formData.get('file') as File;
-  if (!file) throw new Error('No file provided');
+    const file = formData.get('file') as File;
+    if (!file) throw new Error('No file provided');
 
-  // Perform upload
-  const res = await uploadFile(file);
+    // Perform upload
+    const res = await uploadFile(file);
 
-  const db = await getDb();
-  const record = db.death_records.find((r) => r.id === id);
-  if (!record) throw new Error('Record not found.');
+    const db = await getDb();
+    const record = db.death_records.find((r) => r.id === id);
+    if (!record) throw new Error('Record not found.');
 
-  record.supportingDocuments.push(res.filename);
-  record.updatedAt = new Date().toISOString();
-  await saveDb(db);
+    const docEntry = `${file.name}|${res.url}`;
+    record.supportingDocuments.push(docEntry);
+    record.updatedAt = new Date().toISOString();
+    await saveDb(db);
 
-  await logAuditEvent(
-    user.id,
-    user.email,
-    user.role,
-    'FILE_UPLOAD',
-    `Uploaded document "${res.filename}" for death record ${record.deceasedName}`
-  );
+    await logAuditEvent(
+      user.id,
+      user.email,
+      user.role,
+      'FILE_UPLOAD',
+      `Uploaded document "${file.name}" for death record ${record.deceasedName}`
+    );
 
-  return record;
+    return { success: true, record };
+  } catch (err: any) {
+    console.error('uploadDeathFileAction error:', err);
+    return { success: false, error: err.message || 'File upload failed.' };
+  }
 }

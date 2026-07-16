@@ -166,6 +166,11 @@ export async function uploadFile(
   }
 
   // File validation
+  const MAX_FILE_SIZE = 4.5 * 1024 * 1024;
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`File is too large. Maximum allowed size is 4.5 MB. (Provided: ${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
+  }
+
   const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
   if (!allowedTypes.includes(file.type)) {
     throw new Error('Invalid file type. Only PDF and Image files (JPG, PNG, GIF) are allowed.');
