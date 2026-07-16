@@ -436,7 +436,22 @@ ON CONFLICT (email) DO NOTHING;
 ```
  
 > **Note:** After first login, you can create additional user accounts from the Admin → User Management panel.
- 
+
+### Step 4: Resetting Test Registry & Activity Data (Excluding Accounts)
+
+If you want to clear all birth/death registrations, workflow records, and audit logs without deleting user accounts, open the **SQL Editor** on Supabase and run the following script:
+
+```sql
+-- 1. Wipe all audit logs
+TRUNCATE TABLE public.audit_logs RESTART IDENTITY CASCADE;
+
+-- 2. Wipe all birth records
+TRUNCATE TABLE public.birth_records RESTART IDENTITY CASCADE;
+
+-- 3. Wipe all death records
+TRUNCATE TABLE public.death_records RESTART IDENTITY CASCADE;
+```
+
 ---
  
 ## ☁ Supabase Storage Bucket Setup
