@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { getDb, saveDb } from './db';
+import { getDb, saveDb, supabase } from './db';
 import { SystemSettings } from '../types';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
@@ -83,7 +83,7 @@ export async function calculateActualStorageUsage(): Promise<number> {
 }
 
 // Fetch the list of actual files (R2 cloud or local filesystem)
-export async function getStorageFiles(): Promise<{ name: string; size: number; mimeType: string; uploadedAt: string }[]> {
+export async function getStorageFiles(): Promise<{ name: string; size: number; mimeType: string; uploadedAt: string; url: string }[]> {
   // --- CASE A: CLOUDFLARE R2 ---
   if (s3Client && r2BucketName) {
     try {
@@ -93,6 +93,8 @@ export async function getStorageFiles(): Promise<{ name: string; size: number; m
 
       if (!response.Contents) return [];
 
+      const cleanedPublicUrl = r2PublicUrl.endsWith('/') ? r2PublicUrl.slice(0, -1) : r2PublicUrl;
+
       return response.Contents.map((item) => {
         const key = item.Key || 'unknown_file';
         return {
@@ -100,6 +102,7 @@ export async function getStorageFiles(): Promise<{ name: string; size: number; m
           size: item.Size || 0,
           mimeType: key.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
           uploadedAt: item.LastModified ? item.LastModified.toISOString() : new Date().toISOString(),
+          url: `${cleanedPublicUrl}/${key}`,
         };
       });
     } catch (err) {
@@ -119,6 +122,7 @@ export async function getStorageFiles(): Promise<{ name: string; size: number; m
         size: stats.size,
         mimeType: file.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
         uploadedAt: stats.mtime.toISOString(),
+        url: `/uploads/${file}`,
       };
     });
   } catch (err) {
@@ -205,11 +209,40 @@ export async function uploadFile(
         size: fileBytes,
       };
     } catch (err) {
-      console.error('Cloudflare R2 upload failed, falling back to local storage:', err);
+      console.error('Cloudflare R2 upload failed, falling back to other storage options:', err);
     }
   }
 
-  // --- CASE B: LOCAL FS FALLBACK ---
+  // --- CASE B: SUPABASE STORAGE CLOUD UPLOAD FALLBACK (For Vercel persistence if R2 fails or is unset) ---
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.storage.from('documents').upload(cleanName, buffer, {
+        contentType: file.type,
+        upsert: true,
+      });
+
+      if (!error) {
+        const { data: urlData } = supabase.storage.from('documents').getPublicUrl(cleanName);
+
+        if (urlData?.publicUrl) {
+          // Update storage status cache
+          await getStorageStatus();
+
+          return {
+            filename: file.name,
+            url: urlData.publicUrl,
+            size: fileBytes,
+          };
+        }
+      } else {
+        console.error('Supabase storage upload error:', error);
+      }
+    } catch (err) {
+      console.error('Supabase storage upload fallback failed:', err);
+    }
+  }
+
+  // --- CASE C: LOCAL FS FALLBACK ---
   ensureUploadsDirectory();
   const filePath = path.join(UPLOADS_DIR, cleanName);
   fs.writeFileSync(filePath, buffer);
@@ -238,15 +271,24 @@ export async function deleteFile(cleanName: string, sizeBytes: number): Promise<
     } catch (err) {
       console.error(`Failed to delete object from Cloudflare R2 bucket: ${fileKey}`, err);
     }
-  } else {
-    // --- CASE B: LOCAL FS FALLBACK DELETION ---
-    const filePath = path.join(UPLOADS_DIR, fileKey);
-    if (fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error(`Failed to delete physical file: ${filePath}`, err);
-      }
+  }
+
+  // --- CASE B: SUPABASE STORAGE CLOUD FALLBACK DELETION ---
+  if (supabase) {
+    try {
+      await supabase.storage.from('documents').remove([fileKey]);
+    } catch (err) {
+      console.error(`Failed to delete object from Supabase Storage: ${fileKey}`, err);
+    }
+  }
+
+  // --- CASE C: LOCAL FS FALLBACK DELETION ---
+  const filePath = path.join(UPLOADS_DIR, fileKey);
+  if (fs.existsSync(filePath)) {
+    try {
+      fs.unlinkSync(filePath);
+    } catch (err) {
+      console.error(`Failed to delete physical file: ${filePath}`, err);
     }
   }
 

@@ -31,6 +31,6 @@ export async function setStorageUsageAction(bytes: number): Promise<SystemSettin
   return status;
 }
 
-export async function getR2FilesAction(): Promise<{ name: string; size: number; mimeType: string; uploadedAt: string }[]> {
+export async function getR2FilesAction(): Promise<{ name: string; size: number; mimeType: string; uploadedAt: string; url: string }[]> {
   return await getStorageFiles();
 }

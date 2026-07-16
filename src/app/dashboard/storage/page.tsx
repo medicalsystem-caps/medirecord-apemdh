@@ -14,6 +14,9 @@ import {
   FileCheck,
   Calendar,
   Layers,
+  Download,
+  Eye,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -22,8 +25,9 @@ import { motion } from 'framer-motion';
 export default function StorageManagementPage() {
   const { user } = useAuth();
   const [status, setStatus] = useState<SystemSettings | null>(null);
-  const [files, setFiles] = useState<{ name: string; size: number; mimeType: string; uploadedAt: string }[]>([]);
+  const [files, setFiles] = useState<{ name: string; size: number; mimeType: string; uploadedAt: string; url: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewFile, setPreviewFile] = useState<{ name: string; url: string } | null>(null);
   
 
 
@@ -172,7 +176,7 @@ export default function StorageManagementPage() {
               <span className="text-xs text-slate-400 italic block text-center py-10">No certificates files verified in system yet.</span>
             ) : (
               files.map((file, idx) => (
-                <div key={idx} className="p-3 border border-slate-100 rounded-xl space-y-1.5 text-xs hover:border-slate-200 transition-colors">
+                <div key={idx} className="p-3 border border-slate-100 rounded-xl space-y-2.5 text-xs hover:border-slate-200 transition-colors">
                   <div className="flex justify-between items-start gap-3">
                     <span className="font-bold text-slate-700 truncate max-w-[170px]" title={file.name}>{file.name}</span>
                     <span className="text-[10px] font-bold text-slate-400 shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
@@ -184,6 +188,25 @@ export default function StorageManagementPage() {
                       {new Date(file.uploadedAt).toLocaleDateString()}
                     </span>
                   </div>
+                  <div className="flex items-center gap-3 pt-1.5 border-t border-slate-100/50 justify-end">
+                    <button
+                      onClick={() => setPreviewFile({ name: file.name, url: file.url })}
+                      className="text-blue-700 hover:text-blue-800 flex items-center gap-1 cursor-pointer font-bold text-[10px]"
+                    >
+                      <Eye className="h-3 w-3" />
+                      <span>Preview</span>
+                    </button>
+                    <a
+                      href={file.url}
+                      download={file.name}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-teal-700 hover:text-teal-800 flex items-center gap-1 cursor-pointer font-bold text-[10px]"
+                    >
+                      <Download className="h-3 w-3" />
+                      <span>Download</span>
+                    </a>
+                  </div>
                 </div>
               ))
             )}
@@ -191,6 +214,63 @@ export default function StorageManagementPage() {
         </div>
 
       </div>
+
+      {/* Document Preview Modal */}
+      {previewFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-fade-up">
+            {/* Modal Header */}
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div>
+                <span className="text-[10px] text-teal-700 font-bold uppercase tracking-wider block">Document Viewer</span>
+                <h3 className="text-sm font-bold text-slate-800 truncate max-w-[500px]" title={previewFile.name}>{previewFile.name}</h3>
+              </div>
+              <button
+                onClick={() => setPreviewFile(null)}
+                className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 p-6 overflow-y-auto bg-slate-100/50 flex items-center justify-center min-h-[400px]">
+              {/\.(jpg|jpeg|png|gif|webp)$/i.test(previewFile.url) || /\.(jpg|jpeg|png|gif|webp)$/i.test(previewFile.name) ? (
+                <img
+                  src={previewFile.url}
+                  alt={previewFile.name}
+                  className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-xs"
+                />
+              ) : (
+                <iframe
+                  src={`${previewFile.url}#toolbar=0`}
+                  className="w-full h-[65vh] border-0 rounded-xl shadow-xs bg-white"
+                  title={previewFile.name}
+                />
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50">
+              <button
+                onClick={() => setPreviewFile(null)}
+                className="btn-secondary text-xs !py-1.5 px-4"
+              >
+                Close
+              </button>
+              <a
+                href={previewFile.url}
+                download={previewFile.name}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary text-xs !py-1.5 px-4"
+              >
+                Download File
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
